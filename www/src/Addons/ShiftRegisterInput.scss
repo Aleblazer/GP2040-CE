@@ -1,0 +1,6 @@
+// One column of 8 inputs per chip, wrapping onto new rows on narrow screens
+.shift-register-chip {
+	flex: 1 1 15rem;
+	min-width: 15rem;
+	max-width: 22rem;
+}

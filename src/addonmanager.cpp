@@ -1,5 +1,6 @@
 #include "addonmanager.h"
 #include "usbhostmanager.h"
+#include "storagemanager.h"
 
 bool AddonManager::LoadAddon(GPAddon* addon) {
     if (addon->available()) {
@@ -26,6 +27,14 @@ void AddonManager::ReinitializeAddons() {
     // Loop through all addons and process any that match our type
     for (std::vector<AddonBlock*>::iterator it = addons.begin(); it != addons.end(); it++) {
         (*it)->ptr->reinit();
+    }
+}
+
+void AddonManager::ReadInputAddons() {
+    Gamepad * gamepad = Storage::getInstance().GetGamepad();
+    gamepad->clearExternalActionsHeld();
+    for (std::vector<AddonBlock*>::iterator it = addons.begin(); it != addons.end(); it++) {
+        (*it)->ptr->readInputs();
     }
 }
 

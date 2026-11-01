@@ -62,6 +62,10 @@ import GamepadUSBHost, {
 } from '../Addons/GamepadUSBHost';
 import Rotary, { rotaryScheme, rotaryState } from '../Addons/Rotary';
 import PCF8575, { pcf8575Scheme, pcf8575State } from '../Addons/PCF8575';
+import ShiftRegisterInput, {
+	shiftRegisterInputScheme,
+	shiftRegisterInputState,
+} from '../Addons/ShiftRegisterInput';
 import DRV8833Rumble, {
 	drv8833RumbleScheme,
 	drv8833RumbleState,
@@ -103,6 +107,7 @@ const schema = yup.object().shape({
 	...keyboardScheme,
 	...rotaryScheme,
 	...pcf8575Scheme,
+	...shiftRegisterInputScheme,
 	...drv8833RumbleScheme,
 	...reactiveLEDScheme,
 	...gamepadUSBHostScheme,
@@ -130,6 +135,7 @@ export const DEFAULT_VALUES = {
 	...keyboardState,
 	...rotaryState,
 	...pcf8575State,
+	...shiftRegisterInputState,
 	...drv8833RumbleState,
 	...reactiveLEDState,
 	...gamepadUSBHostState,
@@ -158,6 +164,7 @@ const ADDONS = [
 	GamepadUSBHost,
 	Rotary,
 	PCF8575,
+	ShiftRegisterInput,
 	DRV8833Rumble,
 	ReactiveLED,
 	HETrigger,

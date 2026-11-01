@@ -51,9 +51,7 @@ void ReverseInput::setup()
 }
 
 void ReverseInput::update() {
-    Mask_t values = Storage::getInstance().GetGamepad()->debouncedGpio;
-
-    state = (values & mapInputReverse->pinMask);
+    state = Storage::getInstance().GetGamepad()->isActionPressed(mapInputReverse->pinMask, GpioAction::BUTTON_PRESS_INPUT_REVERSE);
 }
 void ReverseInput::reinit() {
     delete mapInputReverse;

@@ -32,6 +32,7 @@
 #include "addons/turbo.h"
 #include "addons/wiiext.h"
 #include "addons/snes_input.h"
+#include "addons/shift_register_input.h"
 #include "addons/input_macro.h"
 #include "addons/rotaryencoder.h"
 #include "addons/i2c_gpio_pcf8575.h"
@@ -1051,6 +1052,33 @@ void ConfigUtils::initUnsetPropertiesWithDefaults(Config& config)
     INIT_UNSET_PROPERTY(config.addonOptions.snesOptions, latchPin, SNES_PAD_LATCH_PIN);
     INIT_UNSET_PROPERTY(config.addonOptions.snesOptions, dataPin, SNES_PAD_DATA_PIN);
 
+    // addonOptions.shiftRegisterInputOptions
+    ShiftRegisterInputOptions& shiftRegisterInputOptions = config.addonOptions.shiftRegisterInputOptions;
+    INIT_UNSET_PROPERTY(shiftRegisterInputOptions, enabled, !!SHIFT_REGISTER_INPUT_ENABLED);
+    INIT_UNSET_PROPERTY(shiftRegisterInputOptions, latchPin, SHIFT_REGISTER_INPUT_LATCH_PIN);
+    INIT_UNSET_PROPERTY(shiftRegisterInputOptions, clockPin, SHIFT_REGISTER_INPUT_CLOCK_PIN);
+    INIT_UNSET_PROPERTY(shiftRegisterInputOptions, dataPin, SHIFT_REGISTER_INPUT_DATA_PIN);
+    INIT_UNSET_PROPERTY(shiftRegisterInputOptions, chainLength, SHIFT_REGISTER_INPUT_CHAIN_LENGTH);
+    INIT_UNSET_PROPERTY(shiftRegisterInputOptions, activeHigh, !!SHIFT_REGISTER_INPUT_ACTIVE_HIGH);
+
+    GpioAction shiftRegisterInputActions[SHIFT_REGISTER_INPUT_MAX_PINS] = {
+        SHIFT_REGISTER_INPUT_PIN00_ACTION,SHIFT_REGISTER_INPUT_PIN01_ACTION,SHIFT_REGISTER_INPUT_PIN02_ACTION,SHIFT_REGISTER_INPUT_PIN03_ACTION,
+        SHIFT_REGISTER_INPUT_PIN04_ACTION,SHIFT_REGISTER_INPUT_PIN05_ACTION,SHIFT_REGISTER_INPUT_PIN06_ACTION,SHIFT_REGISTER_INPUT_PIN07_ACTION,
+        SHIFT_REGISTER_INPUT_PIN08_ACTION,SHIFT_REGISTER_INPUT_PIN09_ACTION,SHIFT_REGISTER_INPUT_PIN10_ACTION,SHIFT_REGISTER_INPUT_PIN11_ACTION,
+        SHIFT_REGISTER_INPUT_PIN12_ACTION,SHIFT_REGISTER_INPUT_PIN13_ACTION,SHIFT_REGISTER_INPUT_PIN14_ACTION,SHIFT_REGISTER_INPUT_PIN15_ACTION,
+        SHIFT_REGISTER_INPUT_PIN16_ACTION,SHIFT_REGISTER_INPUT_PIN17_ACTION,SHIFT_REGISTER_INPUT_PIN18_ACTION,SHIFT_REGISTER_INPUT_PIN19_ACTION,
+        SHIFT_REGISTER_INPUT_PIN20_ACTION,SHIFT_REGISTER_INPUT_PIN21_ACTION,SHIFT_REGISTER_INPUT_PIN22_ACTION,SHIFT_REGISTER_INPUT_PIN23_ACTION,
+        SHIFT_REGISTER_INPUT_PIN24_ACTION,SHIFT_REGISTER_INPUT_PIN25_ACTION,SHIFT_REGISTER_INPUT_PIN26_ACTION,SHIFT_REGISTER_INPUT_PIN27_ACTION,
+        SHIFT_REGISTER_INPUT_PIN28_ACTION,SHIFT_REGISTER_INPUT_PIN29_ACTION,SHIFT_REGISTER_INPUT_PIN30_ACTION,SHIFT_REGISTER_INPUT_PIN31_ACTION
+    };
+
+    for (uint16_t pin = 0; pin < SHIFT_REGISTER_INPUT_MAX_PINS; pin++) {
+        INIT_UNSET_PROPERTY(shiftRegisterInputOptions.pins[pin], action, shiftRegisterInputActions[pin]);
+        INIT_UNSET_PROPERTY(shiftRegisterInputOptions.pins[pin], direction, GpioDirection::GPIO_DIRECTION_INPUT);
+    }
+    // reminder that this must be set or else nanopb won't retain anything
+    shiftRegisterInputOptions.pins_count = SHIFT_REGISTER_INPUT_MAX_PINS;
+
     // addonOptions.pcf8575Options
     INIT_UNSET_PROPERTY(config.addonOptions.pcf8575Options, enabled, I2C_PCF8575_ENABLED);
     INIT_UNSET_PROPERTY(config.addonOptions.pcf8575Options, deprecatedI2cBlock, (I2C_PCF8575_BLOCK == i2c0) ? 0 : 1);
@@ -1933,6 +1961,9 @@ void gpioMappingsMigrationCore(Config& config)
     markAddonPinIfUsed(config.addonOptions.snesOptions.clockPin);
     markAddonPinIfUsed(config.addonOptions.snesOptions.latchPin);
     markAddonPinIfUsed(config.addonOptions.snesOptions.dataPin);
+    markAddonPinIfUsed(config.addonOptions.shiftRegisterInputOptions.latchPin);
+    markAddonPinIfUsed(config.addonOptions.shiftRegisterInputOptions.clockPin);
+    markAddonPinIfUsed(config.addonOptions.shiftRegisterInputOptions.dataPin);
     markAddonPinIfUsed(config.addonOptions.tg16Options.oePin);
     markAddonPinIfUsed(config.addonOptions.tg16Options.selectPin);
     markAddonPinIfUsed(config.addonOptions.tg16Options.dataPin0);

@@ -33,6 +33,7 @@ bool TurboInput::available() {
             turboPinMask |= Mask_t{1} << pin;
         }
     }
+    hasTurboAssigned |= Storage::getInstance().GetGamepad()->hasExternalAction(GpioAction::BUTTON_PRESS_TURBO);
     return Storage::getInstance().getAddonOptions().turboOptions.enabled && (hasTurboAssigned == true);
 }
 
@@ -138,7 +139,7 @@ void TurboInput::process()
     }
 
     // Check for TURBO pin enabled
-    if (gamepad->debouncedGpio & turboPinMask) {
+    if (gamepad->isActionPressed(turboPinMask, GpioAction::BUTTON_PRESS_TURBO)) {
         if (buttonsPressed && (lastPressed != buttonsPressed)) {
             // Only toggle state for buttons changed that are pressed
             turboButtonsMask ^= (lastPressed ^ buttonsPressed) & ~lastPressed; // Toggle Turbo

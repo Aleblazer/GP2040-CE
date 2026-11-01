@@ -17,7 +17,7 @@ void FocusModeAddon::process() {
 	const FocusModeOptions& options = Storage::getInstance().getAddonOptions().focusModeOptions;
 	// Override Enabled Focus-Mode Toggle OR the pin has been pressed
 	if ( options.overrideEnabled || 
-		(gamepad->mapFocusMode->pinMask && (gamepad->debouncedGpio & gamepad->mapFocusMode->pinMask))) {
+		gamepad->isActionPressed(gamepad->mapFocusMode->pinMask, GpioAction::SUSTAIN_FOCUS_MODE)) {
 		if (buttonLockMask & GAMEPAD_MASK_DU) {
 			gamepad->state.dpad &= ~GAMEPAD_MASK_UP;
 		}

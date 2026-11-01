@@ -31,12 +31,12 @@ void SliderSOCDInput::setup()
 
 SOCDMode SliderSOCDInput::read() {
     const SOCDSliderOptions& options = Storage::getInstance().getAddonOptions().socdSliderOptions;
-    Mask_t values = Storage::getInstance().GetGamepad()->debouncedGpio;
-    if (values & upPrioModeMask)                return SOCDMode::SOCD_MODE_UP_PRIORITY;
-    else if (values & neutralModeMask)          return SOCDMode::SOCD_MODE_NEUTRAL;
-    else if (values & secondInputModeMask)      return SOCDMode::SOCD_MODE_SECOND_INPUT_PRIORITY;
-    else if (values & firstInputModeMask)       return SOCDMode::SOCD_MODE_FIRST_INPUT_PRIORITY;
-    else if (values & bypassModeMask)           return SOCDMode::SOCD_MODE_BYPASS;
+    const Gamepad * gamepad = Storage::getInstance().GetGamepad();
+    if (gamepad->isActionPressed(upPrioModeMask, SUSTAIN_SOCD_MODE_UP_PRIO))                return SOCDMode::SOCD_MODE_UP_PRIORITY;
+    else if (gamepad->isActionPressed(neutralModeMask, SUSTAIN_SOCD_MODE_NEUTRAL))          return SOCDMode::SOCD_MODE_NEUTRAL;
+    else if (gamepad->isActionPressed(secondInputModeMask, SUSTAIN_SOCD_MODE_SECOND_WIN))   return SOCDMode::SOCD_MODE_SECOND_INPUT_PRIORITY;
+    else if (gamepad->isActionPressed(firstInputModeMask, SUSTAIN_SOCD_MODE_FIRST_WIN))     return SOCDMode::SOCD_MODE_FIRST_INPUT_PRIORITY;
+    else if (gamepad->isActionPressed(bypassModeMask, SUSTAIN_SOCD_MODE_BYPASS))            return SOCDMode::SOCD_MODE_BYPASS;
     return options.modeDefault;
 }
 

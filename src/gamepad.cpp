@@ -320,6 +320,10 @@ void Gamepad::process()
 void Gamepad::read()
 {
 	Mask_t values = Storage::getInstance().GetGamepad()->debouncedGpio;
+	// A mapped pin or an external input (see holdExternalAction) presses the action
+	const auto pressed = [&](const GamepadButtonMapping* map, GpioAction action) -> bool {
+		return (values & map->pinMask) || isExternalActionHeld(action);
+	};
 
 	// Get the midpoint value for the current mode
 	uint16_t joystickMid = GAMEPAD_JOYSTICK_MID;
@@ -328,86 +332,86 @@ void Gamepad::read()
 	}
 
 	state.aux = 0
-		| (values & mapButtonFn->pinMask)   ? mapButtonFn->buttonMask : 0;
+		| pressed(mapButtonFn, GpioAction::BUTTON_PRESS_FN)   ? mapButtonFn->buttonMask : 0;
 
 	state.dpad = 0
-		| ((values & mapDpadUp->pinMask)       ? mapDpadUp->buttonMask              : 0)
-		| ((values & mapDpadDown->pinMask)     ? mapDpadDown->buttonMask            : 0)
-		| ((values & mapDpadLeft->pinMask)     ? mapDpadLeft->buttonMask            : 0)
-		| ((values & mapDpadRight->pinMask)    ? mapDpadRight->buttonMask           : 0)
-		| ((values & mapDigitalUp->pinMask)    ? (mapDigitalUp->buttonMask << 4)    : 0)
-		| ((values & mapDigitalDown->pinMask)  ? (mapDigitalDown->buttonMask << 4)  : 0)
-		| ((values & mapDigitalLeft->pinMask)  ? (mapDigitalLeft->buttonMask << 4)  : 0)
-		| ((values & mapDigitalRight->pinMask) ? (mapDigitalRight->buttonMask << 4) : 0)
+		| (pressed(mapDpadUp, GpioAction::BUTTON_PRESS_UP)       ? mapDpadUp->buttonMask              : 0)
+		| (pressed(mapDpadDown, GpioAction::BUTTON_PRESS_DOWN)     ? mapDpadDown->buttonMask            : 0)
+		| (pressed(mapDpadLeft, GpioAction::BUTTON_PRESS_LEFT)     ? mapDpadLeft->buttonMask            : 0)
+		| (pressed(mapDpadRight, GpioAction::BUTTON_PRESS_RIGHT)    ? mapDpadRight->buttonMask           : 0)
+		| (pressed(mapDigitalUp, GpioAction::DIGITAL_DIRECTION_UP)    ? (mapDigitalUp->buttonMask << 4)    : 0)
+		| (pressed(mapDigitalDown, GpioAction::DIGITAL_DIRECTION_DOWN)  ? (mapDigitalDown->buttonMask << 4)  : 0)
+		| (pressed(mapDigitalLeft, GpioAction::DIGITAL_DIRECTION_LEFT)  ? (mapDigitalLeft->buttonMask << 4)  : 0)
+		| (pressed(mapDigitalRight, GpioAction::DIGITAL_DIRECTION_RIGHT) ? (mapDigitalRight->buttonMask << 4) : 0)
 	;
 
 	state.buttons = 0
-		| ((values & mapButtonB1->pinMask)  ? mapButtonB1->buttonMask  : 0)
-		| ((values & mapButtonB2->pinMask)  ? mapButtonB2->buttonMask  : 0)
-		| ((values & mapButtonB3->pinMask)  ? mapButtonB3->buttonMask  : 0)
-		| ((values & mapButtonB4->pinMask)  ? mapButtonB4->buttonMask  : 0)
-		| ((values & mapButtonL1->pinMask)  ? mapButtonL1->buttonMask  : 0)
-		| ((values & mapButtonR1->pinMask)  ? mapButtonR1->buttonMask  : 0)
-		| ((values & mapButtonL2->pinMask)  ? mapButtonL2->buttonMask  : 0)
-		| ((values & mapButtonR2->pinMask)  ? mapButtonR2->buttonMask  : 0)
-		| ((values & mapButtonS1->pinMask)  ? mapButtonS1->buttonMask  : 0)
-		| ((values & mapButtonS2->pinMask)  ? mapButtonS2->buttonMask  : 0)
-		| ((values & mapButtonL3->pinMask)  ? mapButtonL3->buttonMask  : 0)
-		| ((values & mapButtonR3->pinMask)  ? mapButtonR3->buttonMask  : 0)
-		| ((values & mapButtonA1->pinMask)  ? mapButtonA1->buttonMask  : 0)
-		| ((values & mapButtonA2->pinMask)  ? mapButtonA2->buttonMask  : 0)
-		| ((values & mapButtonA3->pinMask)  ? mapButtonA3->buttonMask  : 0)
-		| ((values & mapButtonA4->pinMask)  ? mapButtonA4->buttonMask  : 0)
-		| ((values & mapButtonE1->pinMask)  ? mapButtonE1->buttonMask  : 0)
-		| ((values & mapButtonE2->pinMask)  ? mapButtonE2->buttonMask  : 0)
-		| ((values & mapButtonE3->pinMask)  ? mapButtonE3->buttonMask  : 0)
-		| ((values & mapButtonE4->pinMask)  ? mapButtonE4->buttonMask  : 0)
-		| ((values & mapButtonE5->pinMask)  ? mapButtonE5->buttonMask  : 0)
-		| ((values & mapButtonE6->pinMask)  ? mapButtonE6->buttonMask  : 0)
-		| ((values & mapButtonE7->pinMask)  ? mapButtonE7->buttonMask  : 0)
-		| ((values & mapButtonE8->pinMask)  ? mapButtonE8->buttonMask  : 0)
-		| ((values & mapButtonE9->pinMask)  ? mapButtonE9->buttonMask  : 0)
-		| ((values & mapButtonE10->pinMask) ? mapButtonE10->buttonMask : 0)
-		| ((values & mapButtonE11->pinMask) ? mapButtonE11->buttonMask : 0)
-		| ((values & mapButtonE12->pinMask) ? mapButtonE12->buttonMask : 0)
+		| (pressed(mapButtonB1, GpioAction::BUTTON_PRESS_B1)  ? mapButtonB1->buttonMask  : 0)
+		| (pressed(mapButtonB2, GpioAction::BUTTON_PRESS_B2)  ? mapButtonB2->buttonMask  : 0)
+		| (pressed(mapButtonB3, GpioAction::BUTTON_PRESS_B3)  ? mapButtonB3->buttonMask  : 0)
+		| (pressed(mapButtonB4, GpioAction::BUTTON_PRESS_B4)  ? mapButtonB4->buttonMask  : 0)
+		| (pressed(mapButtonL1, GpioAction::BUTTON_PRESS_L1)  ? mapButtonL1->buttonMask  : 0)
+		| (pressed(mapButtonR1, GpioAction::BUTTON_PRESS_R1)  ? mapButtonR1->buttonMask  : 0)
+		| (pressed(mapButtonL2, GpioAction::BUTTON_PRESS_L2)  ? mapButtonL2->buttonMask  : 0)
+		| (pressed(mapButtonR2, GpioAction::BUTTON_PRESS_R2)  ? mapButtonR2->buttonMask  : 0)
+		| (pressed(mapButtonS1, GpioAction::BUTTON_PRESS_S1)  ? mapButtonS1->buttonMask  : 0)
+		| (pressed(mapButtonS2, GpioAction::BUTTON_PRESS_S2)  ? mapButtonS2->buttonMask  : 0)
+		| (pressed(mapButtonL3, GpioAction::BUTTON_PRESS_L3)  ? mapButtonL3->buttonMask  : 0)
+		| (pressed(mapButtonR3, GpioAction::BUTTON_PRESS_R3)  ? mapButtonR3->buttonMask  : 0)
+		| (pressed(mapButtonA1, GpioAction::BUTTON_PRESS_A1)  ? mapButtonA1->buttonMask  : 0)
+		| (pressed(mapButtonA2, GpioAction::BUTTON_PRESS_A2)  ? mapButtonA2->buttonMask  : 0)
+		| (pressed(mapButtonA3, GpioAction::BUTTON_PRESS_A3)  ? mapButtonA3->buttonMask  : 0)
+		| (pressed(mapButtonA4, GpioAction::BUTTON_PRESS_A4)  ? mapButtonA4->buttonMask  : 0)
+		| (pressed(mapButtonE1, GpioAction::BUTTON_PRESS_E1)  ? mapButtonE1->buttonMask  : 0)
+		| (pressed(mapButtonE2, GpioAction::BUTTON_PRESS_E2)  ? mapButtonE2->buttonMask  : 0)
+		| (pressed(mapButtonE3, GpioAction::BUTTON_PRESS_E3)  ? mapButtonE3->buttonMask  : 0)
+		| (pressed(mapButtonE4, GpioAction::BUTTON_PRESS_E4)  ? mapButtonE4->buttonMask  : 0)
+		| (pressed(mapButtonE5, GpioAction::BUTTON_PRESS_E5)  ? mapButtonE5->buttonMask  : 0)
+		| (pressed(mapButtonE6, GpioAction::BUTTON_PRESS_E6)  ? mapButtonE6->buttonMask  : 0)
+		| (pressed(mapButtonE7, GpioAction::BUTTON_PRESS_E7)  ? mapButtonE7->buttonMask  : 0)
+		| (pressed(mapButtonE8, GpioAction::BUTTON_PRESS_E8)  ? mapButtonE8->buttonMask  : 0)
+		| (pressed(mapButtonE9, GpioAction::BUTTON_PRESS_E9)  ? mapButtonE9->buttonMask  : 0)
+		| (pressed(mapButtonE10, GpioAction::BUTTON_PRESS_E10) ? mapButtonE10->buttonMask : 0)
+		| (pressed(mapButtonE11, GpioAction::BUTTON_PRESS_E11) ? mapButtonE11->buttonMask : 0)
+		| (pressed(mapButtonE12, GpioAction::BUTTON_PRESS_E12) ? mapButtonE12->buttonMask : 0)
 	;
 
 	// hold current dpad state regardless of input mode -> output, which is determined in process()
 	state.dpadOriginal = state.dpad;
 
 	// set the effective dpad mode based on settings + overrides
-	if (values & mapButtonDP->pinMask)	activeDpadMode = DpadMode::DPAD_MODE_DIGITAL;
-	else if (values & mapButtonLS->pinMask)	activeDpadMode = DpadMode::DPAD_MODE_LEFT_ANALOG;
-	else if (values & mapButtonRS->pinMask)	activeDpadMode = DpadMode::DPAD_MODE_RIGHT_ANALOG;
+	if (pressed(mapButtonDP, GpioAction::SUSTAIN_DP_MODE_DP))	activeDpadMode = DpadMode::DPAD_MODE_DIGITAL;
+	else if (pressed(mapButtonLS, GpioAction::SUSTAIN_DP_MODE_LS))	activeDpadMode = DpadMode::DPAD_MODE_LEFT_ANALOG;
+	else if (pressed(mapButtonRS, GpioAction::SUSTAIN_DP_MODE_RS))	activeDpadMode = DpadMode::DPAD_MODE_RIGHT_ANALOG;
 	else					activeDpadMode = options.dpadMode;
 
-	map48WayModeToggle = (values & map48WayMode->pinMask);
+	map48WayModeToggle = pressed(map48WayMode, GpioAction::SUSTAIN_4_8_WAY_MODE);
 
-	if (values & mapAnalogLSXNeg->pinMask) {
+	if (pressed(mapAnalogLSXNeg, GpioAction::ANALOG_DIRECTION_LS_X_NEG)) {
 		state.lx = GAMEPAD_JOYSTICK_MIN;
-	} else if (values & mapAnalogLSXPos->pinMask) {
+	} else if (pressed(mapAnalogLSXPos, GpioAction::ANALOG_DIRECTION_LS_X_POS)) {
 		state.lx = GAMEPAD_JOYSTICK_MAX;
 	} else {
 		state.lx = joystickMid;
 	}
-	if (values & mapAnalogLSYNeg->pinMask) {
+	if (pressed(mapAnalogLSYNeg, GpioAction::ANALOG_DIRECTION_LS_Y_NEG)) {
 		state.ly = GAMEPAD_JOYSTICK_MIN;
-	} else if (values & mapAnalogLSYPos->pinMask) {
+	} else if (pressed(mapAnalogLSYPos, GpioAction::ANALOG_DIRECTION_LS_Y_POS)) {
 		state.ly = GAMEPAD_JOYSTICK_MAX;
 	} else {
 		state.ly = joystickMid;
 	}
 
-	if (values & mapAnalogRSXNeg->pinMask) {
+	if (pressed(mapAnalogRSXNeg, GpioAction::ANALOG_DIRECTION_RS_X_NEG)) {
 		state.rx = GAMEPAD_JOYSTICK_MIN;
-	} else if (values & mapAnalogRSXPos->pinMask) {
+	} else if (pressed(mapAnalogRSXPos, GpioAction::ANALOG_DIRECTION_RS_X_POS)) {
 		state.rx = GAMEPAD_JOYSTICK_MAX;
 	} else {
 		state.rx = joystickMid;
 	}
-	if (values & mapAnalogRSYNeg->pinMask) {
+	if (pressed(mapAnalogRSYNeg, GpioAction::ANALOG_DIRECTION_RS_Y_NEG)) {
 		state.ry = GAMEPAD_JOYSTICK_MIN;
-	} else if (values & mapAnalogRSYPos->pinMask) {
+	} else if (pressed(mapAnalogRSYPos, GpioAction::ANALOG_DIRECTION_RS_Y_POS)) {
 		state.ry = GAMEPAD_JOYSTICK_MAX;
 	} else {
 		state.ry = joystickMid;

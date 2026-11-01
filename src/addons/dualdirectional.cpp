@@ -102,13 +102,12 @@ void DualDirectionalInput::preprocess()
 {
     const DualDirectionalOptions& options = Storage::getInstance().getAddonOptions().dualDirectionalOptions;
     Gamepad * gamepad = Storage::getInstance().GetGamepad();
-    Mask_t values = gamepad->debouncedGpio;
 
     dualState = 0
-            | ((values & mapDpadUp->pinMask)    ? mapDpadUp->buttonMask : 0)
-            | ((values & mapDpadDown->pinMask)  ? mapDpadDown->buttonMask : 0)
-            | ((values & mapDpadLeft->pinMask)  ? mapDpadLeft->buttonMask : 0)
-            | ((values & mapDpadRight->pinMask) ? mapDpadRight->buttonMask : 0);
+            | (gamepad->isActionPressed(mapDpadUp->pinMask, GpioAction::BUTTON_PRESS_DDI_UP)       ? mapDpadUp->buttonMask : 0)
+            | (gamepad->isActionPressed(mapDpadDown->pinMask, GpioAction::BUTTON_PRESS_DDI_DOWN)   ? mapDpadDown->buttonMask : 0)
+            | (gamepad->isActionPressed(mapDpadLeft->pinMask, GpioAction::BUTTON_PRESS_DDI_LEFT)   ? mapDpadLeft->buttonMask : 0)
+            | (gamepad->isActionPressed(mapDpadRight->pinMask, GpioAction::BUTTON_PRESS_DDI_RIGHT) ? mapDpadRight->buttonMask : 0);
 
     const SOCDMode socdMode = getSOCDMode(gamepad->getOptions());
 

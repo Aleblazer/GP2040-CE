@@ -22,6 +22,13 @@ bool InputMacro::available() {
                 break;
         }
     }
+
+    // Macro triggers can also come from external inputs (see Gamepad::holdExternalAction)
+    Gamepad * gamepad = Storage::getInstance().GetGamepad();
+    for (GpioAction action : { GpioAction::BUTTON_PRESS_MACRO, GpioAction::BUTTON_PRESS_MACRO_1, GpioAction::BUTTON_PRESS_MACRO_2,
+            GpioAction::BUTTON_PRESS_MACRO_3, GpioAction::BUTTON_PRESS_MACRO_4, GpioAction::BUTTON_PRESS_MACRO_5, GpioAction::BUTTON_PRESS_MACRO_6 }) {
+        if (gamepad->hasExternalAction(action)) return true;
+    }
     return false;
 }
 
@@ -94,7 +101,10 @@ void InputMacro::restart(Macro& macro) {
 
 void InputMacro::checkMacroPress() {
     Gamepad * gamepad = Storage::getInstance().GetGamepad();
-    Mask_t allPins = gamepad->debouncedGpio;
+    const GpioAction macroActions[MAX_MACRO_LIMIT] = {
+        GpioAction::BUTTON_PRESS_MACRO_1, GpioAction::BUTTON_PRESS_MACRO_2, GpioAction::BUTTON_PRESS_MACRO_3,
+        GpioAction::BUTTON_PRESS_MACRO_4, GpioAction::BUTTON_PRESS_MACRO_5, GpioAction::BUTTON_PRESS_MACRO_6,
+    };
 
     // Go through our macro list
     pressedMacro = -1;
@@ -104,13 +114,13 @@ void InputMacro::checkMacroPress() {
         Macro * macro = &inputMacroOptions->macroList[i];
         if ( macro->useMacroTriggerButton ) {
             // Use Gamepad Button for Macro Trigger
-            if ((allPins & macroButtonMask) &&
+            if (gamepad->isActionPressed(macroButtonMask, GpioAction::BUTTON_PRESS_MACRO) &&
                 ((gamepad->state.buttons & macro->macroTriggerButton) ||
                     (gamepad->state.dpad & (macro->macroTriggerButton >> 16))) ) {
                 pressedMacro = i;
                 break;
             }
-        } else if ( allPins & macroPinMasks[i] ) {
+        } else if ( gamepad->isActionPressed(macroPinMasks[i], macroActions[i]) ) {
             // Use Pin Manager for Macro Trigger
             pressedMacro = i;
             break;
@@ -254,7 +264,7 @@ void InputMacro::preprocess()
         Gamepad * gamepad = Storage::getInstance().GetGamepad();
         // Override Toggle Pressed OR focus mode pin is set
         if (focusModeOptions->overrideEnabled ||
-            (gamepad->mapFocusMode->pinMask && (gamepad->debouncedGpio & gamepad->mapFocusMode->pinMask))) {
+            gamepad->isActionPressed(gamepad->mapFocusMode->pinMask, GpioAction::SUSTAIN_FOCUS_MODE)) {
             return;
         }
     }

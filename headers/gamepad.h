@@ -201,6 +201,25 @@ public:
 	// see GP2040::debounceGpioGetAll for details
 	Mask_t debouncedGpio = 0;
 
+	/**
+	 * External actions let inputs that aren't GPIO pins (e.g. shift registers) trigger any
+	 * GpioAction, including the ones features look up by pin such as turbo and macros.
+	 * Sources register the actions they can produce during setup, then mark the held ones
+	 * from GPAddon::readInputs(), which runs right before read() every loop.
+	 */
+	inline void registerExternalAction(GpioAction action) { setActionBit(externalActionsMapped, action); }
+	inline bool hasExternalAction(GpioAction action) const { return testActionBit(externalActionsMapped, action); }
+	inline void holdExternalAction(GpioAction action) { setActionBit(externalActionsHeld, action); }
+	inline bool isExternalActionHeld(GpioAction action) const { return testActionBit(externalActionsHeld, action); }
+	inline void clearExternalActionsHeld() { memset(externalActionsHeld, 0, sizeof(externalActionsHeld)); }
+
+	/**
+	 * @brief True when a pin mapped to the action is pressed, or an external input holds the action.
+	 */
+	inline bool isActionPressed(Mask_t pinMask, GpioAction action) const {
+		return (debouncedGpio & pinMask) || isExternalActionHeld(action);
+	}
+
 	uint32_t lastReinitProfileNumber = 0;
 
 	// These are special to SOCD
@@ -227,6 +246,18 @@ private:
 	GamepadHotkey lastAction = HOTKEY_NONE;
 
 	absolute_time_t disableFocusModeTimeout = nil_time;
+
+	// One bit per GpioAction value (0-255)
+	static const uint8_t ACTION_BITSET_WORDS = 4;
+	uint64_t externalActionsMapped[ACTION_BITSET_WORDS] = {};
+	uint64_t externalActionsHeld[ACTION_BITSET_WORDS] = {};
+
+	static inline void setActionBit(uint64_t* bits, GpioAction action) {
+		if (action > 0 && action < (ACTION_BITSET_WORDS * 64)) bits[action / 64] |= (uint64_t{1} << (action % 64));
+	}
+	static inline bool testActionBit(const uint64_t* bits, GpioAction action) {
+		return action > 0 && action < (ACTION_BITSET_WORDS * 64) && (bits[action / 64] & (uint64_t{1} << (action % 64)));
+	}
 };
 
 #endif

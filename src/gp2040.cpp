@@ -29,6 +29,7 @@
 #include "addons/wiiext.h"
 #include "addons/input_macro.h"
 #include "addons/snes_input.h"
+#include "addons/shift_register_input.h"
 #include "addons/rotaryencoder.h"
 #include "addons/i2c_gpio_pcf8575.h"
 #include "addons/gamepad_usb_host.h"
@@ -110,6 +111,7 @@ void GP2040::setup() {
 	if (addons.LoadAddon(heTrigger))
 		heTriggerAddon = heTrigger;
 	addons.LoadAddon(new BootselButtonAddon());
+	addons.LoadAddon(new ShiftRegisterInput());
 	addons.LoadAddon(new DualDirectionalInput());
 	addons.LoadAddon(new FocusModeAddon());
 	addons.LoadAddon(new I2CAnalog1115Input());
@@ -272,6 +274,8 @@ void __not_in_flash_func(GP2040::run)() {
 
 		// Debounce
 		debounceGpioGetAll();
+		// Read inputs that aren't GPIO pins (e.g. shift registers)
+		addons.ReadInputAddons();
 		// Read Gamepad
 		gamepad->read();
 
@@ -385,6 +389,7 @@ GP2040::BootAction GP2040::getButtonMappedBootAction() {
 	Gamepad * processedGamepad = Storage::getInstance().GetProcessedGamepad();
 
 	debounceGpioGetAll();
+	addons.ReadInputAddons();
 	gamepad->read();
 
 	// Pre-Process add-ons for MPGS

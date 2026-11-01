@@ -24,6 +24,7 @@ public:
     bool LoadAddon(GPAddon*);
     bool LoadUSBAddon(GPAddon*);
     void ReinitializeAddons();
+    void ReadInputAddons();
     void PreprocessAddons();
     void ProcessAddons();
     void PostprocessAddons(bool);

@@ -14,6 +14,12 @@ public:
     virtual void setup() = 0;
     virtual void process() = 0;
     virtual void preprocess() = 0;
+
+    /**
+     * Read inputs that aren't GPIO pins, before the gamepad state is built from the pins.
+     * Add-ons report what they read through Gamepad::holdExternalAction().
+     */
+    virtual void readInputs() {}
     virtual void postprocess(bool) = 0;
     virtual std::string name() = 0;
 

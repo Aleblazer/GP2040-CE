@@ -37,6 +37,7 @@
 #include "lwip/def.h"
 #include "lwip/mem.h"
 #include "addons/input_macro.h"
+#include "addons/shift_register_input.h"
 
 #define PATH_CGI_ACTION "/cgi/action"
 
@@ -1892,9 +1893,17 @@ std::string setPeripheralOptions()
     return serialize_json(doc);
 }
 
+// Keys for the shift register inputs; string literals are referenced rather than copied by ArduinoJson
+static const char* const shiftRegisterInputPinNames[SHIFT_REGISTER_INPUT_MAX_PINS] = {
+    "pin00", "pin01", "pin02", "pin03", "pin04", "pin05", "pin06", "pin07",
+    "pin08", "pin09", "pin10", "pin11", "pin12", "pin13", "pin14", "pin15",
+    "pin16", "pin17", "pin18", "pin19", "pin20", "pin21", "pin22", "pin23",
+    "pin24", "pin25", "pin26", "pin27", "pin28", "pin29", "pin30", "pin31",
+};
+
 std::string getExpansionPins()
 {
-    const size_t capacity = JSON_OBJECT_SIZE(100);
+    const size_t capacity = JSON_OBJECT_SIZE(100) + JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(SHIFT_REGISTER_INPUT_MAX_PINS) + (SHIFT_REGISTER_INPUT_MAX_PINS * JSON_OBJECT_SIZE(4));
     DynamicJsonDocument doc(capacity);
     GpioMappingInfo* gpioMappings = Storage::getInstance().getAddonOptions().pcf8575Options.pins;
     writeDoc(doc, "pins", "pcf8575", 0, "pin00", "option", gpioMappings[0].action);
@@ -1929,6 +1938,14 @@ std::string getExpansionPins()
     writeDoc(doc, "pins", "pcf8575", 0, "pin14", "direction", gpioMappings[14].direction);
     writeDoc(doc, "pins", "pcf8575", 0, "pin15", "option", gpioMappings[15].action);
     writeDoc(doc, "pins", "pcf8575", 0, "pin15", "direction", gpioMappings[15].direction);
+
+    const GpioMappingInfo* shiftRegisterMappings = Storage::getInstance().getAddonOptions().shiftRegisterInputOptions.pins;
+    for (uint8_t pin = 0; pin < SHIFT_REGISTER_INPUT_MAX_PINS; pin++) {
+        writeDoc(doc, "pins", "shiftRegisterInput", 0, shiftRegisterInputPinNames[pin], "option", shiftRegisterMappings[pin].action);
+        writeDoc(doc, "pins", "shiftRegisterInput", 0, shiftRegisterInputPinNames[pin], "direction", GpioDirection::GPIO_DIRECTION_INPUT);
+        writeDoc(doc, "pins", "shiftRegisterInput", 0, shiftRegisterInputPinNames[pin], "customButtonMask", shiftRegisterMappings[pin].customButtonMask);
+        writeDoc(doc, "pins", "shiftRegisterInput", 0, shiftRegisterInputPinNames[pin], "customDpadMask", shiftRegisterMappings[pin].customDpadMask);
+    }
     return serialize_json(doc);
 }
 
@@ -1951,6 +1968,23 @@ std::string setExpansionPins()
         }
     }
     Storage::getInstance().getAddonOptions().pcf8575Options.pins_count = 16;
+
+    ShiftRegisterInputOptions& shiftRegisterInputOptions = Storage::getInstance().getAddonOptions().shiftRegisterInputOptions;
+    if (doc["pins"].containsKey("shiftRegisterInput")) {
+        for (uint8_t pin = 0; pin < SHIFT_REGISTER_INPUT_MAX_PINS; pin++) {
+            JsonVariantConst pinDoc = doc["pins"]["shiftRegisterInput"][0][shiftRegisterInputPinNames[pin]];
+            if (pinDoc.isNull()) continue;
+            GpioAction action = (GpioAction)pinDoc["option"].as<int>();
+            if (action != GpioAction::RESERVED && action != GpioAction::ASSIGNED_TO_ADDON) {
+                shiftRegisterInputOptions.pins[pin].action = action;
+                shiftRegisterInputOptions.pins[pin].direction = GpioDirection::GPIO_DIRECTION_INPUT;
+                bool isCombo = (action == GpioAction::CUSTOM_BUTTON_COMBO);
+                shiftRegisterInputOptions.pins[pin].customButtonMask = isCombo ? pinDoc["customButtonMask"].as<uint32_t>() : 0;
+                shiftRegisterInputOptions.pins[pin].customDpadMask = isCombo ? pinDoc["customDpadMask"].as<uint32_t>() : 0;
+            }
+        }
+    }
+    shiftRegisterInputOptions.pins_count = SHIFT_REGISTER_INPUT_MAX_PINS;
 
     EventManager::getInstance().triggerEvent(new GPStorageSaveEvent(true));
 
@@ -2348,6 +2382,14 @@ std::string setAddonOptions()
     docToPin(snesOptions.clockPin, doc, "snesPadClockPin");
     docToPin(snesOptions.latchPin, doc, "snesPadLatchPin");
     docToPin(snesOptions.dataPin, doc, "snesPadDataPin");
+
+    ShiftRegisterInputOptions& shiftRegisterInputOptions = Storage::getInstance().getAddonOptions().shiftRegisterInputOptions;
+    docToValue(shiftRegisterInputOptions.enabled, doc, "ShiftRegisterInputAddonEnabled");
+    docToPin(shiftRegisterInputOptions.latchPin, doc, "shiftRegisterInputLatchPin");
+    docToPin(shiftRegisterInputOptions.clockPin, doc, "shiftRegisterInputClockPin");
+    docToPin(shiftRegisterInputOptions.dataPin, doc, "shiftRegisterInputDataPin");
+    docToValue(shiftRegisterInputOptions.chainLength, doc, "shiftRegisterInputChainLength");
+    docToValue(shiftRegisterInputOptions.activeHigh, doc, "shiftRegisterInputActiveHigh");
 
     KeyboardHostOptions& keyboardHostOptions = Storage::getInstance().getAddonOptions().keyboardHostOptions;
     docToValue(keyboardHostOptions.enabled, doc, "KeyboardHostAddonEnabled");
@@ -2849,6 +2891,14 @@ std::string getAddonOptions()
     writeDoc(doc, "snesPadLatchPin", cleanPin(snesOptions.latchPin));
     writeDoc(doc, "snesPadDataPin", cleanPin(snesOptions.dataPin));
     writeDoc(doc, "SNESpadAddonEnabled", snesOptions.enabled);
+
+    const ShiftRegisterInputOptions& shiftRegisterInputOptions = Storage::getInstance().getAddonOptions().shiftRegisterInputOptions;
+    writeDoc(doc, "ShiftRegisterInputAddonEnabled", shiftRegisterInputOptions.enabled);
+    writeDoc(doc, "shiftRegisterInputLatchPin", cleanPin(shiftRegisterInputOptions.latchPin));
+    writeDoc(doc, "shiftRegisterInputClockPin", cleanPin(shiftRegisterInputOptions.clockPin));
+    writeDoc(doc, "shiftRegisterInputDataPin", cleanPin(shiftRegisterInputOptions.dataPin));
+    writeDoc(doc, "shiftRegisterInputChainLength", shiftRegisterInputOptions.chainLength);
+    writeDoc(doc, "shiftRegisterInputActiveHigh", shiftRegisterInputOptions.activeHigh);
 
     const KeyboardHostOptions& keyboardHostOptions = Storage::getInstance().getAddonOptions().keyboardHostOptions;
     writeDoc(doc, "KeyboardHostAddonEnabled", keyboardHostOptions.enabled);
