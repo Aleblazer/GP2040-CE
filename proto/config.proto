@@ -182,32 +182,6 @@ message ForcedSetupOptions
     optional ForcedSetupMode mode = 1;
 };
 
-message ButtonLayoutParamsCommon
-{
-    optional int32 startX = 1;
-    optional int32 startY = 2;
-    optional int32 buttonRadius = 3;
-    optional int32 buttonPadding = 4;
-}
-
-message ButtonLayoutParamsLeft
-{
-    optional ButtonLayout layout = 1;
-    optional ButtonLayoutParamsCommon common = 2;
-}
-
-message ButtonLayoutParamsRight
-{
-    optional ButtonLayoutRight layout = 1;
-    optional ButtonLayoutParamsCommon common = 2;
-}
-
-message ButtonLayoutCustomOptions
-{
-    optional ButtonLayoutParamsLeft paramsLeft = 1;
-    optional ButtonLayoutParamsRight paramsRight = 2;
-}
-
 message PinMappings
 {
     optional int32 pinDpadUp = 1;
@@ -285,7 +259,7 @@ message DisplayOptions
 
     optional ButtonLayout buttonLayout = 7;
     optional ButtonLayoutRight buttonLayoutRight = 8;
-    optional ButtonLayoutCustomOptions buttonLayoutCustomOptions = 9;
+    reserved 9; // buttonLayoutCustomOptions, removed with BUTTON_LAYOUT_CUSTOMA/B
 
     optional SplashMode splashMode = 10;
     optional SplashChoice splashChoice = 11;
@@ -316,17 +290,19 @@ message DisplayOptions
     
     optional uint32 contrast = 31;
 
-    optional SPIDisplayType spiDisplayType = 32;
-    optional int32 spiDisplayBlock = 33;
-    optional int32 spiDisplayPinDC = 34;
-    optional int32 spiDisplayPinReset = 35;
-    optional int32 spiDisplayPinBacklight = 36;
-    optional int32 spiDisplayOffsetX = 37;
-    optional int32 spiDisplayOffsetY = 38;
-    optional SPIDisplayScaleMode spiDisplayScaleMode = 39;
-    optional uint32 spiDisplayForegroundColor = 40;
-    optional uint32 spiDisplayBackgroundColor = 41;
-    optional SPIDisplayInitSequence spiDisplayInitSequence = 42;
+    optional bytes customLayoutA = 32 [(nanopb).max_size = 288];
+    optional bytes customLayoutB = 33 [(nanopb).max_size = 288];
+    optional SPIDisplayType spiDisplayType = 34;
+    optional int32 spiDisplayBlock = 35;
+    optional int32 spiDisplayPinDC = 36;
+    optional int32 spiDisplayPinReset = 37;
+    optional int32 spiDisplayPinBacklight = 38;
+    optional int32 spiDisplayOffsetX = 39;
+    optional int32 spiDisplayOffsetY = 40;
+    optional SPIDisplayScaleMode spiDisplayScaleMode = 41;
+    optional uint32 spiDisplayForegroundColor = 42;
+    optional uint32 spiDisplayBackgroundColor = 43;
+    optional SPIDisplayInitSequence spiDisplayInitSequence = 44;
 }
 
 message LightCluster
