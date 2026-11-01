@@ -31,8 +31,13 @@ import {
 	LIGHT_INPUT_SOURCES,
 	LIGHT_TYPES,
 	MAX_EXT_INPUT_LIGHT_COLOR_INDEXES,
+	MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES,
+	ButtonColorArrays,
 	getButtonColorKeys,
+	getShiftRegisterInputName,
 	isExtInputLight,
+	isShiftRegisterLight,
+	lightTypeHasInput,
 } from '../../Data/Leds';
 import boards from '../../Data/Boards.json';
 
@@ -66,6 +71,8 @@ export default function LightCoordsSection({
 	notPressedStaticColors,
 	extPressedStaticColors = [],
 	extNotPressedStaticColors = [],
+	shiftRegisterPressedStaticColors = [],
+	shiftRegisterNotPressedStaticColors = [],
 	nonButtonStaticColors,
 	profileIndex,
 	values,
@@ -78,6 +85,8 @@ export default function LightCoordsSection({
 	notPressedStaticColors: number[];
 	extPressedStaticColors?: number[];
 	extNotPressedStaticColors?: number[];
+	shiftRegisterPressedStaticColors?: number[];
+	shiftRegisterNotPressedStaticColors?: number[];
 	nonButtonStaticColors: number[];
 	profileIndex: number;
 	values: LedFormValues;
@@ -103,12 +112,20 @@ export default function LightCoordsSection({
 	const selectedColorKeys = getButtonColorKeys(
 		selectedLightValue ?? { lightType: -1, GPIOPinOrNonButtonIndex: 0 },
 	);
-	const selectedNotPressedColors = selectedIsExtInput
-		? extNotPressedStaticColors
-		: notPressedStaticColors;
-	const selectedPressedColors = selectedIsExtInput
-		? extPressedStaticColors
-		: pressedStaticColors;
+	const selectedIsShiftRegister = selectedLightValue
+		? isShiftRegisterLight(selectedLightValue)
+		: false;
+	const colorArrays: ButtonColorArrays = {
+		notPressedStaticColors,
+		pressedStaticColors,
+		extNotPressedStaticColors,
+		extPressedStaticColors,
+		shiftRegisterNotPressedStaticColors,
+		shiftRegisterPressedStaticColors,
+	};
+	const selectedNotPressedColors =
+		colorArrays[selectedColorKeys.notPressed] ?? [];
+	const selectedPressedColors = colorArrays[selectedColorKeys.pressed] ?? [];
 
 	const mouseSensor = useSensor(MouseSensor, {
 		activationConstraint: undefined,
@@ -272,7 +289,7 @@ export default function LightCoordsSection({
 											`Lights[${selectedLight}].lightType`,
 											lightType,
 										);
-										if (lightType !== LIGHT_TYPES.ActionButton) {
+										if (!lightTypeHasInput(lightType)) {
 											setFieldValue(
 												`Lights[${selectedLight}].inputSource`,
 												LIGHT_INPUT_SOURCES.GPIO,
@@ -328,8 +345,7 @@ export default function LightCoordsSection({
 									onChange={handleChange}
 									min={0}
 								/>
-								{values.Lights[selectedLight]?.lightType ===
-									LIGHT_TYPES.ActionButton && (
+								{lightTypeHasInput(values.Lights[selectedLight]?.lightType) && (
 									<FormSelect
 										label={t(
 											'LedConfigPage:lightCoordsSection.input-source-label',
@@ -361,6 +377,11 @@ export default function LightCoordsSection({
 												'LedConfigPage:lightCoordsSection.input-source-hall-effect',
 											)}
 										</option>
+										<option value={LIGHT_INPUT_SOURCES.ShiftRegister}>
+											{t(
+												'LedConfigPage:lightCoordsSection.input-source-shift-register',
+											)}
+										</option>
 									</FormSelect>
 								)}
 								<FormSelect
@@ -371,9 +392,13 @@ export default function LightCoordsSection({
 												? t(
 														'LedConfigPage:lightCoordsSection.hall-effect-sensor-tied-label',
 													)
-												: t(
-														'LedConfigPage:lightCoordsSection.gpio-pin-tied-label',
-													)
+												: selectedIsShiftRegister
+													? t(
+															'LedConfigPage:lightCoordsSection.shift-register-input-tied-label',
+														)
+													: t(
+															'LedConfigPage:lightCoordsSection.gpio-pin-tied-label',
+														)
 									}
 									className="form-select"
 									groupClassName="mb-3"
@@ -391,6 +416,19 @@ export default function LightCoordsSection({
 													{t(
 														'LedConfigPage:lightCoordsSection.case-id-option',
 														{ index: nonButtonIndex + 1 },
+													)}
+												</option>
+											))}
+										</>
+									) : selectedIsShiftRegister ? (
+										<>
+											{Array.from({
+												length: MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES,
+											}).map((_, inputIndex) => (
+												<option key={inputIndex} value={inputIndex}>
+													{t(
+														'LedConfigPage:lightCoordsSection.shift-register-input-option',
+														{ input: getShiftRegisterInputName(inputIndex) },
 													)}
 												</option>
 											))}

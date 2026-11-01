@@ -461,7 +461,8 @@ export enum LightType {
 
 export enum LightInputSource {
     GPIO = 0,
-    HallEffect = 1
+    HallEffect = 1,
+    ShiftRegister = 2
 }
 
 export enum ShmupMixMode {

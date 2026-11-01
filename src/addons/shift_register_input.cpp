@@ -54,13 +54,13 @@ void ShiftRegisterInput::setup() {
         forEachAction(inputMappings[input], &Gamepad::registerExternalAction);
     }
 
-    debouncedInputs = readChain() & mappedInputs;
+    debouncedInputs = readChain();
+    Storage::getInstance().GetGamepad()->debouncedShiftRegisterInputs = debouncedInputs;
 }
 
 void ShiftRegisterInput::readInputs() {
-    if (mappedInputs == 0) return;
-
-    uint32_t pressedInputs = readChain() & mappedInputs;
+    // Every input is debounced, including unmapped ones, so lights can follow any input
+    uint32_t pressedInputs = readChain();
 
     // Same debounce rules as the direct GPIO buttons: a change is accepted when
     // the input hasn't changed within the configured debounce delay
@@ -80,7 +80,9 @@ void ShiftRegisterInput::readInputs() {
         }
     }
 
-    uint32_t activeInputs = debouncedInputs;
+    Storage::getInstance().GetGamepad()->debouncedShiftRegisterInputs = debouncedInputs;
+
+    uint32_t activeInputs = debouncedInputs & mappedInputs;
     while (activeInputs != 0) {
         forEachAction(inputMappings[__builtin_ctz(activeInputs)], &Gamepad::holdExternalAction);
         activeInputs &= activeInputs - 1;

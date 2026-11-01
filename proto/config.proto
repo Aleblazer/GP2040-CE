@@ -400,6 +400,8 @@ message AnimationProfile
     optional uint32 effectContextParam = 21;
     optional bytes extNotPressedStaticColors = 22 [(nanopb).max_size = 32]; //Hall Effect button lights (MAX_EXT_INPUT_LIGHT_COLOR_INDEXES)
     optional bytes extPressedStaticColors = 23 [(nanopb).max_size = 32]; //Hall Effect button lights (MAX_EXT_INPUT_LIGHT_COLOR_INDEXES)
+    optional bytes shiftRegisterNotPressedStaticColors = 24 [(nanopb).max_size = 32]; //Shift register button lights (MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES)
+    optional bytes shiftRegisterPressedStaticColors = 25 [(nanopb).max_size = 32]; //Shift register button lights (MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES)
 };
 
 // This has to be kept in sync with AnimationOptions_Unpacked in animationstation.hpp

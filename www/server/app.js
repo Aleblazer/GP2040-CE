@@ -426,6 +426,8 @@ app.get('/api/getAnimationProtoOptions', (req, res) => {
 					],
 					extNotPressedStaticColors: Array(32).fill(2),
 					extPressedStaticColors: Array(32).fill(4),
+					shiftRegisterNotPressedStaticColors: Array(32).fill(6),
+					shiftRegisterPressedStaticColors: Array(32).fill(8),
 				},
 				{
 					bEnabled: 1,
@@ -461,6 +463,8 @@ app.get('/api/getAnimationProtoOptions', (req, res) => {
 					],
 					extNotPressedStaticColors: Array(32).fill(2),
 					extPressedStaticColors: Array(32).fill(4),
+					shiftRegisterNotPressedStaticColors: Array(32).fill(6),
+					shiftRegisterPressedStaticColors: Array(32).fill(8),
 				},
 			],
 		},

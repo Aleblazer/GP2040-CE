@@ -25,6 +25,8 @@ export type AnimationProfile = {
 	pressedStaticColors: number[];
 	extNotPressedStaticColors?: number[];
 	extPressedStaticColors?: number[];
+	shiftRegisterNotPressedStaticColors?: number[];
+	shiftRegisterPressedStaticColors?: number[];
 	caseSpecialColor: number;
 	bNonPressedSpecialColorIsRainbow: 0 | 1;
 	bPressedSpecialColorIsRainbow: 0 | 1;

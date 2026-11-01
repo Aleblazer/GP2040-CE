@@ -11,6 +11,8 @@
 
 // Hall Effect sensors that can drive a light; matches ext*StaticColors max_size in config.proto
 #define MAX_EXT_INPUT_LIGHT_COLOR_INDEXES 32
+// Shift register inputs, numbered (chip - 1) * 8 + input (A = 0 ... H = 7)
+#define MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES 32
 
 // GPIO keys equal the pin number
 inline int32_t MakeLightInputKey(LightInputSource source, uint8_t index) { return ((int32_t)source << 8) | index; }
@@ -18,10 +20,17 @@ inline int32_t MakeLightInputKey(LightInputSource source, uint8_t index) { retur
 // Board config LIGHT_DATA_* entries: firstLedIndex, ledCount, x, y, GPIO pin / case index / HE sensor index, type, input source
 #define LIGHT_DATA_ENTRY_SIZE 7
 
+// Button and turbo lights are tied to an input; case and player lights aren't
+constexpr bool LightTypeHasInput(uint8_t type)
+{
+  return type == LightType::LightType_ActionButton || type == LightType::LightType_Turbo;
+}
+
 constexpr LightInputSource LightDataInputSource(uint8_t type, uint8_t source)
 {
-  return (type == LightType::LightType_ActionButton && source == LightInputSource::LightInputSource_HallEffect)
-    ? LightInputSource::LightInputSource_HallEffect : LightInputSource::LightInputSource_GPIO;
+  return (LightTypeHasInput(type) &&
+          (source == LightInputSource::LightInputSource_HallEffect || source == LightInputSource::LightInputSource_ShiftRegister))
+    ? (LightInputSource)source : LightInputSource::LightInputSource_GPIO;
 }
 
 inline bool IsValidLightInput(LightInputSource source, uint32_t index)
@@ -30,6 +39,7 @@ inline bool IsValidLightInput(LightInputSource source, uint32_t index)
   {
     case LightInputSource::LightInputSource_GPIO:       return index < NUM_BANK0_GPIOS;
     case LightInputSource::LightInputSource_HallEffect: return index < MAX_EXT_INPUT_LIGHT_COLOR_INDEXES;
+    case LightInputSource::LightInputSource_ShiftRegister: return index < MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES;
     default:                                            return false;
   }
 }
@@ -101,11 +111,8 @@ struct Light
       NonButtonIndex = InGPIOPinOrNonButtonIndex;
       PlayerLightIndex = 3;
     }
-    else if(InType == LightType::LightType_ActionButton || InType == LightType::LightType_Turbo)
+    else if(LightTypeHasInput(InType))
     {
-      if(InType == LightType::LightType_Turbo)
-        InSource = LightInputSource::LightInputSource_GPIO;
-
       if(IsValidLightInput(InSource, InGPIOPinOrNonButtonIndex))
       {
         InputSource = InSource;

@@ -201,6 +201,9 @@ public:
 	// see GP2040::debounceGpioGetAll for details
 	Mask_t debouncedGpio = 0;
 
+	// debounced shift register inputs, one bit per input (see ShiftRegisterInput) --- 1 = pressed
+	uint32_t debouncedShiftRegisterInputs = 0;
+
 	/**
 	 * External actions let inputs that aren't GPIO pins (e.g. shift registers) trigger any
 	 * GpioAction, including the ones features look up by pin such as turbo and macros.

@@ -42,6 +42,8 @@
 #define PATH_CGI_ACTION "/cgi/action"
 
 #define LWIP_HTTPD_POST_MAX_PAYLOAD_LEN (1024 * 16)
+// Animation options carry four profiles of per-input color arrays (GPIO, Hall Effect, shift register)
+#define ANIMATION_OPTIONS_JSON_CAPACITY (1024 * 24)
 
 #define MAX_MAPPED_INPUT_MODES 8
 
@@ -283,9 +285,9 @@ int set_file_data(fs_file *file, string&& data)
     return set_file_data(file, DataAndStatusCode(std::move(data), HttpStatusCode::_200));
 }
 
-DynamicJsonDocument get_post_data()
+DynamicJsonDocument get_post_data(size_t capacity = LWIP_HTTPD_POST_MAX_PAYLOAD_LEN)
 {
-    DynamicJsonDocument doc(LWIP_HTTPD_POST_MAX_PAYLOAD_LEN);
+    DynamicJsonDocument doc(capacity);
     deserializeJson(doc, http_post_payload, http_post_payload_len);
     return doc;
 }
@@ -1041,6 +1043,8 @@ LightInputSource helperGetLightInputSource(JsonObject& light)
     uint8_t source = light["inputSource"].as<uint8_t>();
     if (source == LightInputSource::LightInputSource_HallEffect)
         return LightInputSource::LightInputSource_HallEffect;
+    if (source == LightInputSource::LightInputSource_ShiftRegister)
+        return LightInputSource::LightInputSource_ShiftRegister;
     return LightInputSource::LightInputSource_GPIO;
 }
 
@@ -1362,6 +1366,19 @@ void helperGetProfileFromJsonObject(AnimationProfile* Profile, JsonObject* JsonD
         Profile->has_extNotPressedStaticColors = true;
         Profile->has_extPressedStaticColors = true;
     }
+
+    if ((*JsonData).containsKey("shiftRegisterNotPressedStaticColors") && (*JsonData).containsKey("shiftRegisterPressedStaticColors")) {
+        JsonArray shiftRegisterNotPressedStaticColorsList = (*JsonData)["shiftRegisterNotPressedStaticColors"];
+        JsonArray shiftRegisterPressedStaticColorsList = (*JsonData)["shiftRegisterPressedStaticColors"];
+        for(uint32_t i = 0; i < MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES; i++){
+            Profile->shiftRegisterNotPressedStaticColors.bytes[i] = shiftRegisterNotPressedStaticColorsList[i].as<uint32_t>() & 0xFF;
+            Profile->shiftRegisterPressedStaticColors.bytes[i] = shiftRegisterPressedStaticColorsList[i].as<uint32_t>() & 0xFF;
+        }
+        Profile->shiftRegisterNotPressedStaticColors.size = MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES;
+        Profile->shiftRegisterPressedStaticColors.size = MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES;
+        Profile->has_shiftRegisterNotPressedStaticColors = true;
+        Profile->has_shiftRegisterPressedStaticColors = true;
+    }
 }
 
 // Fix issue here
@@ -1427,7 +1444,7 @@ std::string clearAnimationButtonTestMode()
 
 std::string setAnimationProtoOptions()
 {
-    DynamicJsonDocument doc = get_post_data();
+    DynamicJsonDocument doc = get_post_data(ANIMATION_OPTIONS_JSON_CAPACITY);
 
     AnimationOptions& options = Storage::getInstance().getAnimationOptions();
     AnimationStation& AnimStation = AnimationStation::getInstance();
@@ -1465,7 +1482,7 @@ std::string setAnimationProtoOptions()
 
 std::string getAnimationProtoOptions()
 {
-    DynamicJsonDocument doc(LWIP_HTTPD_POST_MAX_PAYLOAD_LEN);
+    DynamicJsonDocument doc(ANIMATION_OPTIONS_JSON_CAPACITY);
     const AnimationOptions& options = Storage::getInstance().getAnimationOptions();
     AnimationStation& AnimStation = AnimationStation::getInstance();
 
@@ -1525,6 +1542,13 @@ std::string getAnimationProtoOptions()
         for (unsigned int index = 0; index < MAX_EXT_INPUT_LIGHT_COLOR_INDEXES; index++) {
             extNotPressedStaticColorsList.add(options.profiles[profilesIndex].extNotPressedStaticColors.bytes[index]);
             extPressedStaticColorsList.add(options.profiles[profilesIndex].extPressedStaticColors.bytes[index]);
+        }
+
+        JsonArray shiftRegisterNotPressedStaticColorsList = profile.createNestedArray("shiftRegisterNotPressedStaticColors");
+        JsonArray shiftRegisterPressedStaticColorsList = profile.createNestedArray("shiftRegisterPressedStaticColors");
+        for (unsigned int index = 0; index < MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES; index++) {
+            shiftRegisterNotPressedStaticColorsList.add(options.profiles[profilesIndex].shiftRegisterNotPressedStaticColors.bytes[index]);
+            shiftRegisterPressedStaticColorsList.add(options.profiles[profilesIndex].shiftRegisterPressedStaticColors.bytes[index]);
         }
     }
 

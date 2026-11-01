@@ -34,10 +34,18 @@ export const LIGHT_TYPES = {
 export const LIGHT_INPUT_SOURCES = {
 	GPIO: 0,
 	HallEffect: 1,
+	ShiftRegister: 2,
 };
 
 // Must match MAX_EXT_INPUT_LIGHT_COLOR_INDEXES in pixel.h
 export const MAX_EXT_INPUT_LIGHT_COLOR_INDEXES = 32;
+
+// Must match MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES in pixel.h
+export const MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES = 32;
+
+// Shift register inputs are named by chip and pin, e.g. index 9 is 2B
+export const getShiftRegisterInputName = (index: number) =>
+	`${Math.floor(index / 8) + 1}${'ABCDEFGH'[index % 8]}`;
 
 type LightInputInfo = {
 	lightType: number;
@@ -45,9 +53,17 @@ type LightInputInfo = {
 	GPIOPinOrNonButtonIndex: number;
 };
 
+// Button and turbo lights are tied to an input; case and player lights aren't
+export const lightTypeHasInput = (lightType: number) =>
+	lightType === LIGHT_TYPES.ActionButton || lightType === LIGHT_TYPES.Turbo;
+
 export const isExtInputLight = (light: LightInputInfo) =>
-	light.lightType === LIGHT_TYPES.ActionButton &&
+	lightTypeHasInput(light.lightType) &&
 	light.inputSource === LIGHT_INPUT_SOURCES.HallEffect;
+
+export const isShiftRegisterLight = (light: LightInputInfo) =>
+	lightTypeHasInput(light.lightType) &&
+	light.inputSource === LIGHT_INPUT_SOURCES.ShiftRegister;
 
 export const getButtonColorKeys = (light: LightInputInfo) =>
 	isExtInputLight(light)
@@ -55,12 +71,28 @@ export const getButtonColorKeys = (light: LightInputInfo) =>
 				notPressed: 'extNotPressedStaticColors',
 				pressed: 'extPressedStaticColors',
 			} as const)
-		: ({
-				notPressed: 'notPressedStaticColors',
-				pressed: 'pressedStaticColors',
-			} as const);
+		: isShiftRegisterLight(light)
+			? ({
+					notPressed: 'shiftRegisterNotPressedStaticColors',
+					pressed: 'shiftRegisterPressedStaticColors',
+				} as const)
+			: ({
+					notPressed: 'notPressedStaticColors',
+					pressed: 'pressedStaticColors',
+				} as const);
+
+export type ButtonColorArrays = Partial<
+	Record<
+		ReturnType<typeof getButtonColorKeys>[keyof ReturnType<
+			typeof getButtonColorKeys
+		>],
+		number[]
+	>
+>;
 
 export const getLightInputLabel = (light: LightInputInfo) =>
 	isExtInputLight(light)
 		? `HE${light.GPIOPinOrNonButtonIndex + 1}`
-		: `GP${light.GPIOPinOrNonButtonIndex}`;
+		: isShiftRegisterLight(light)
+			? `SR${getShiftRegisterInputName(light.GPIOPinOrNonButtonIndex)}`
+			: `GP${light.GPIOPinOrNonButtonIndex}`;

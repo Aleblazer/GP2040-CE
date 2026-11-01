@@ -680,6 +680,10 @@ uint8_t* AnimationStation::ButtonColorSlot(AnimationProfile& Profile, LightInput
       if(Pressed)
         return InputIndex < sizeof(Profile.extPressedStaticColors.bytes) ? &Profile.extPressedStaticColors.bytes[InputIndex] : nullptr;
       return InputIndex < sizeof(Profile.extNotPressedStaticColors.bytes) ? &Profile.extNotPressedStaticColors.bytes[InputIndex] : nullptr;
+    case LightInputSource::LightInputSource_ShiftRegister:
+      if(Pressed)
+        return InputIndex < sizeof(Profile.shiftRegisterPressedStaticColors.bytes) ? &Profile.shiftRegisterPressedStaticColors.bytes[InputIndex] : nullptr;
+      return InputIndex < sizeof(Profile.shiftRegisterNotPressedStaticColors.bytes) ? &Profile.shiftRegisterNotPressedStaticColors.bytes[InputIndex] : nullptr;
     default:
       return nullptr;
   }

@@ -331,6 +331,7 @@ void NeoPicoLEDAddon::process()
 	//Check each light's own input (GPIO pin or HE sensor) so inputs sharing a gamepad button light separately
 	const Mask_t gpioValues = Storage::getInstance().GetGamepad()->debouncedGpio;
 	const uint32_t heValues = gamepad->state.heTriggers;
+	const uint32_t shiftRegisterValues = Storage::getInstance().GetGamepad()->debouncedShiftRegisterInputs;
 	pressedInputs.clear();
 	for(const Light& thisLight : RGBLights.AllLights)
 	{
@@ -342,6 +343,7 @@ void NeoPicoLEDAddon::process()
 		{
 			case LightInputSource::LightInputSource_GPIO:       isPressed = isValidPin(thisLight.InputIndex) && ((gpioValues >> thisLight.InputIndex) & 1ULL); break;
 			case LightInputSource::LightInputSource_HallEffect: isPressed = thisLight.InputIndex < 32 && ((heValues >> thisLight.InputIndex) & 1u); break;
+			case LightInputSource::LightInputSource_ShiftRegister: isPressed = thisLight.InputIndex < 32 && ((shiftRegisterValues >> thisLight.InputIndex) & 1u); break;
 			default: break;
 		}
 		if(isPressed)
@@ -830,7 +832,7 @@ void NeoPicoLEDAddon::GenerateLights()
 		int gpioPin = (ledOptions.lightClusterData[index].lightTypeData) & 0xFF;
 		int ledType = (ledOptions.lightClusterData[index].lightTypeData >> 8) & 0xFF;
 		LightInputSource inputSource = LightInputSource::LightInputSource_GPIO;
-		if(ledType == LightType::LightType_ActionButton)
+		if(LightTypeHasInput(ledType))
 			inputSource = (LightInputSource)((ledOptions.lightClusterData[index].lightTypeData >> 16) & 0xFF);
 		//Data format = {first led index, leds on this light, xcoord, ycoord, GPIO pin/input index, Type}
 		LightPosition newLightPos (posX, posY);

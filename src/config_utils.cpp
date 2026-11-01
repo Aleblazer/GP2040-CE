@@ -860,6 +860,15 @@ void ConfigUtils::initUnsetPropertiesWithDefaults(Config& config)
         INIT_UNSET_PROPERTY_BYTES(config.animationOptions.profiles[profileIndex], extPressedStaticColors, extBuffer);
     }
 
+    // Shift register button light colors, same defaults as the Hall Effect ones
+    unsigned char shiftRegisterBuffer[MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES];
+    for (int profileIndex = 0; profileIndex < MAX_ANIMATION_PROFILES; profileIndex++) {
+        memset(shiftRegisterBuffer, extNotPressedDefaults[profileIndex], sizeof(shiftRegisterBuffer));
+        INIT_UNSET_PROPERTY_BYTES(config.animationOptions.profiles[profileIndex], shiftRegisterNotPressedStaticColors, shiftRegisterBuffer);
+        memset(shiftRegisterBuffer, extPressedDefaults[profileIndex], sizeof(shiftRegisterBuffer));
+        INIT_UNSET_PROPERTY_BYTES(config.animationOptions.profiles[profileIndex], shiftRegisterPressedStaticColors, shiftRegisterBuffer);
+    }
+
     // addonOptions.bootselButtonOptions
     INIT_UNSET_PROPERTY(config.addonOptions.bootselButtonOptions, enabled, !!BOOTSEL_BUTTON_ENABLED);
     INIT_UNSET_PROPERTY(config.addonOptions.bootselButtonOptions, buttonMap, BOOTSEL_BUTTON_MASK);

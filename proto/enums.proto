@@ -528,6 +528,7 @@ enum LightInputSource
 {
     GPIO = 0;
     HallEffect = 1;
+    ShiftRegister = 2;
 }
 
 enum ShmupMixMode

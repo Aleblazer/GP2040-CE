@@ -7,9 +7,13 @@ import {
 	LED_COLORS,
 	LIGHT_TYPES,
 	MAX_EXT_INPUT_LIGHT_COLOR_INDEXES,
+	MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES,
+	ButtonColorArrays,
 	getButtonColorKeys,
 	getLightInputLabel,
+	getShiftRegisterInputName,
 	isExtInputLight,
+	isShiftRegisterLight,
 } from '../../Data/Leds';
 import {
 	Light,
@@ -77,6 +81,8 @@ function ButtonLayoutPreview({
 	notPressedStaticColors,
 	extPressedStaticColors = [],
 	extNotPressedStaticColors = [],
+	shiftRegisterPressedStaticColors = [],
+	shiftRegisterNotPressedStaticColors = [],
 	nonButtonStaticColors,
 	profileIndex,
 	setFieldValue,
@@ -87,6 +93,8 @@ function ButtonLayoutPreview({
 	notPressedStaticColors: number[];
 	extPressedStaticColors?: number[];
 	extNotPressedStaticColors?: number[];
+	shiftRegisterPressedStaticColors?: number[];
+	shiftRegisterNotPressedStaticColors?: number[];
 	nonButtonStaticColors: number[];
 	profileIndex: number;
 	customColors?: number[];
@@ -198,16 +206,23 @@ function ButtonLayoutPreview({
 						xmlns="http://www.w3.org/2000/svg"
 					>
 						{Lights.map((light, index) => {
+							const colorArrays: ButtonColorArrays = {
+								notPressedStaticColors,
+								pressedStaticColors,
+								extNotPressedStaticColors,
+								extPressedStaticColors,
+								shiftRegisterNotPressedStaticColors,
+								shiftRegisterPressedStaticColors,
+							};
 							switch (light.lightType) {
 								case LIGHT_TYPES.ActionButton: {
 									const isExtInput = isExtInputLight(light);
+									const isShiftRegister = isShiftRegisterLight(light);
 									const colorKeys = getButtonColorKeys(light);
-									const lightNotPressedColors = isExtInput
-										? extNotPressedStaticColors
-										: notPressedStaticColors;
-									const lightPressedColors = isExtInput
-										? extPressedStaticColors
-										: pressedStaticColors;
+									const lightNotPressedColors =
+										colorArrays[colorKeys.notPressed] ?? [];
+									const lightPressedColors =
+										colorArrays[colorKeys.pressed] ?? [];
 									return (
 										<ColorSelectOverlay
 											key={`button-light-${index}`}
@@ -217,10 +232,19 @@ function ButtonLayoutPreview({
 															'LedConfigPage:buttonLayoutPreview.overlay-hall-effect-title',
 															{ index: light.GPIOPinOrNonButtonIndex + 1 },
 														)
-													: t(
-															'LedConfigPage:buttonLayoutPreview.overlay-gpio-title',
-															{ pin: light.GPIOPinOrNonButtonIndex },
-														)
+													: isShiftRegister
+														? t(
+																'LedConfigPage:buttonLayoutPreview.overlay-shift-register-title',
+																{
+																	input: getShiftRegisterInputName(
+																		light.GPIOPinOrNonButtonIndex,
+																	),
+																},
+															)
+														: t(
+																'LedConfigPage:buttonLayoutPreview.overlay-gpio-title',
+																{ pin: light.GPIOPinOrNonButtonIndex },
+															)
 											}
 											content={
 												<div style={{ minWidth: 200 }}>
@@ -376,14 +400,36 @@ function ButtonLayoutPreview({
 									);
 								}
 								case LIGHT_TYPES.Turbo:
-								case LIGHT_TYPES.PlayerLight:
+								case LIGHT_TYPES.PlayerLight: {
+									// Turbo lights can be tied to any input source; player lights use GPIO colors
+									const miscColorKeys = getButtonColorKeys(light);
+									const miscNotPressedColors =
+										colorArrays[miscColorKeys.notPressed] ?? [];
+									const miscPressedColors =
+										colorArrays[miscColorKeys.pressed] ?? [];
 									return (
 										<ColorSelectOverlay
 											key={`misc-light-${index}`}
-											title={t(
-												'LedConfigPage:buttonLayoutPreview.overlay-gpio-title',
-												{ pin: light.GPIOPinOrNonButtonIndex },
-											)}
+											title={
+												isExtInputLight(light)
+													? t(
+															'LedConfigPage:buttonLayoutPreview.overlay-hall-effect-title',
+															{ index: light.GPIOPinOrNonButtonIndex + 1 },
+														)
+													: isShiftRegisterLight(light)
+														? t(
+																'LedConfigPage:buttonLayoutPreview.overlay-shift-register-title',
+																{
+																	input: getShiftRegisterInputName(
+																		light.GPIOPinOrNonButtonIndex,
+																	),
+																},
+															)
+														: t(
+																'LedConfigPage:buttonLayoutPreview.overlay-gpio-title',
+																{ pin: light.GPIOPinOrNonButtonIndex },
+															)
+											}
 											content={
 												<div style={{ minWidth: 200 }}>
 													<p>
@@ -393,14 +439,14 @@ function ButtonLayoutPreview({
 														options={colorOptions}
 														value={
 															colorOptions[
-																notPressedStaticColors[
+																miscNotPressedColors[
 																	light.GPIOPinOrNonButtonIndex
 																]
 															] || null
 														}
 														onChange={(selected) => {
 															setFieldValue(
-																`AnimationOptions.profiles.${profileIndex}.notPressedStaticColors.${light.GPIOPinOrNonButtonIndex}`,
+																`AnimationOptions.profiles.${profileIndex}.${miscColorKeys.notPressed}.${light.GPIOPinOrNonButtonIndex}`,
 																selected?.value || 0,
 															);
 														}}
@@ -415,14 +461,12 @@ function ButtonLayoutPreview({
 														options={colorOptions}
 														value={
 															colorOptions[
-																pressedStaticColors[
-																	light.GPIOPinOrNonButtonIndex
-																]
+																miscPressedColors[light.GPIOPinOrNonButtonIndex]
 															] || null
 														}
 														onChange={(selected) => {
 															setFieldValue(
-																`AnimationOptions.profiles.${profileIndex}.pressedStaticColors.${light.GPIOPinOrNonButtonIndex}`,
+																`AnimationOptions.profiles.${profileIndex}.${miscColorKeys.pressed}.${light.GPIOPinOrNonButtonIndex}`,
 																selected?.value || 0,
 															);
 														}}
@@ -436,10 +480,10 @@ function ButtonLayoutPreview({
 													fill={
 														colorOptions[
 															pressed
-																? pressedStaticColors[
+																? miscPressedColors[
 																		light.GPIOPinOrNonButtonIndex
 																	]
-																: notPressedStaticColors[
+																: miscNotPressedColors[
 																		light.GPIOPinOrNonButtonIndex
 																	]
 														]?.color || 'black'
@@ -459,11 +503,12 @@ function ButtonLayoutPreview({
 														textShadow: '0 0 3px black',
 													}}
 												>
-													{`GP${light.GPIOPinOrNonButtonIndex}`}
+													{getLightInputLabel(light)}
 												</text>
 											</g>
 										</ColorSelectOverlay>
 									);
+								}
 								default:
 									return null;
 							}
@@ -497,6 +542,12 @@ function ButtonLayoutPreview({
 										selected?.value || 0,
 									),
 								);
+								setFieldValue(
+									`AnimationOptions.profiles.${profileIndex}.shiftRegisterNotPressedStaticColors`,
+									Array(MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES).fill(
+										selected?.value || 0,
+									),
+								);
 							}}
 						/>
 						<p className="mt-3">
@@ -517,6 +568,12 @@ function ButtonLayoutPreview({
 								setFieldValue(
 									`AnimationOptions.profiles.${profileIndex}.extPressedStaticColors`,
 									Array(MAX_EXT_INPUT_LIGHT_COLOR_INDEXES).fill(
+										selected?.value || 0,
+									),
+								);
+								setFieldValue(
+									`AnimationOptions.profiles.${profileIndex}.shiftRegisterPressedStaticColors`,
+									Array(MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES).fill(
 										selected?.value || 0,
 									),
 								);

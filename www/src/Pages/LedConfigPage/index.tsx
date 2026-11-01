@@ -46,6 +46,7 @@ import boards from '../../Data/Boards.json';
 import {
 	LED_FORMATS,
 	MAX_EXT_INPUT_LIGHT_COLOR_INDEXES,
+	MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES,
 } from '../../Data/Leds';
 
 import LightCoordsSection from './LightCoordsSection';
@@ -122,6 +123,8 @@ const schema = yup.object({
 				pressedStaticColors: yup.array().of(yup.number()),
 				extNotPressedStaticColors: yup.array().of(yup.number()),
 				extPressedStaticColors: yup.array().of(yup.number()),
+				shiftRegisterNotPressedStaticColors: yup.array().of(yup.number()),
+				shiftRegisterPressedStaticColors: yup.array().of(yup.number()),
 				caseSpecialColor: yup.number().required(),
 				bNonPressedSpecialColorIsRainbow: yup.number().required(),
 				bPressedSpecialColorIsRainbow: yup.number().required(),
@@ -223,6 +226,14 @@ const emptyAnimationProfile = {
 	),
 	extPressedStaticColors: Array.from(
 		{ length: MAX_EXT_INPUT_LIGHT_COLOR_INDEXES },
+		() => 1,
+	),
+	shiftRegisterNotPressedStaticColors: Array.from(
+		{ length: MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES },
+		() => 0,
+	),
+	shiftRegisterPressedStaticColors: Array.from(
+		{ length: MAX_SHIFT_REGISTER_LIGHT_COLOR_INDEXES },
 		() => 1,
 	),
 };
@@ -1165,6 +1176,12 @@ export default function LedConfigPage() {
 														extNotPressedStaticColors={
 															profile.extNotPressedStaticColors
 														}
+														shiftRegisterPressedStaticColors={
+															profile.shiftRegisterPressedStaticColors
+														}
+														shiftRegisterNotPressedStaticColors={
+															profile.shiftRegisterNotPressedStaticColors
+														}
 														nonButtonStaticColors={
 															profile.nonButtonStaticColors
 														}
@@ -1184,6 +1201,12 @@ export default function LedConfigPage() {
 														}
 														extNotPressedStaticColors={
 															profile.extNotPressedStaticColors
+														}
+														shiftRegisterPressedStaticColors={
+															profile.shiftRegisterPressedStaticColors
+														}
+														shiftRegisterNotPressedStaticColors={
+															profile.shiftRegisterNotPressedStaticColors
 														}
 														nonButtonStaticColors={
 															profile.nonButtonStaticColors
