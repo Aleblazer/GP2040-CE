@@ -19,6 +19,7 @@ typedef enum {
 typedef enum {
     DISPLAY_TYPE_NONE,
     DISPLAY_TYPE_SSD1306,
+    DISPLAY_TYPE_NV3007,
     DISPLAY_TYPE_COUNT
 } GPGFX_DisplayType;
 

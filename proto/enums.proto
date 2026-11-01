@@ -114,6 +114,31 @@ enum SplashMode
     SPLASH_MODE_NONE = 3;
 }
 
+enum SPIDisplayType
+{
+    option (nanopb_enumopt).long_names = false;
+
+    SPI_DISPLAY_NONE = 0;
+    SPI_DISPLAY_NV3007 = 1;
+}
+
+enum SPIDisplayScaleMode
+{
+    option (nanopb_enumopt).long_names = false;
+
+    SPI_DISPLAY_SCALE_STRETCH = 0;
+    SPI_DISPLAY_SCALE_FIT = 1;
+    SPI_DISPLAY_SCALE_FILL = 2;
+}
+
+enum SPIDisplayInitSequence
+{
+    option (nanopb_enumopt).long_names = false;
+
+    SPI_DISPLAY_INIT_NV3007_STANDARD = 0;
+    SPI_DISPLAY_INIT_NV3007_279 = 1;
+}
+
 enum SplashChoice
 {
     option (nanopb_enumopt).long_names = false;

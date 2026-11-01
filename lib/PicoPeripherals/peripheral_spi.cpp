@@ -41,10 +41,12 @@ void PeripheralSPI::setup() {
     spi_init(_SPI, _Speed);
     initialized = true;
 
-    gpio_set_function(_SCK, GPIO_FUNC_SPI);
-    gpio_set_function(_TX, GPIO_FUNC_SPI);
-    gpio_set_function(_RX, GPIO_FUNC_SPI);
-    gpio_pull_up(_RX);
+    if (_SCK < NUM_BANK0_GPIOS) gpio_set_function(_SCK, GPIO_FUNC_SPI);
+    if (_TX < NUM_BANK0_GPIOS) gpio_set_function(_TX, GPIO_FUNC_SPI);
+    if (_RX < NUM_BANK0_GPIOS) {
+        gpio_set_function(_RX, GPIO_FUNC_SPI);
+        gpio_pull_up(_RX);
+    }
 
     if (_UseDMA) {
         // DMA configuration - 2 channels (TX/RX)

@@ -242,6 +242,7 @@ src/drivers/xinput/XInputReportPolicy.cpp
 src/interfaces/i2c/i2cdevicebase.cpp
 src/interfaces/i2c/pcf8575/pcf8575.cpp
 src/interfaces/i2c/ssd1306/tiny_ssd1306.cpp
+src/interfaces/spi/nv3007/nv3007.cpp
 src/display/ui/elements/GPWidget.cpp
 src/display/ui/elements/GPButton.cpp
 src/display/ui/elements/GPLever.cpp
@@ -343,7 +344,9 @@ NeoPico
 ArduinoJson
 rndis
 hardware_adc
+hardware_dma
 hardware_pwm
+hardware_spi
 PicoPeripherals
 WiiExtension
 SNESpad
@@ -364,6 +367,7 @@ headers/interfaces/i2c/ads1115
 headers/interfaces/i2c/ads1219
 headers/interfaces/i2c/pcf8575
 headers/interfaces/i2c/ssd1306
+headers/interfaces/spi/nv3007
 headers/interfaces/i2c/wiiextension
 headers/gamepad
 headers/display

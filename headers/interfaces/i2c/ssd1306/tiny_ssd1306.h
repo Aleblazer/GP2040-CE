@@ -8,7 +8,7 @@
 class GPGFX_TinySSD1306 : public GPGFX_DisplayBase {
     public:
         GPGFX_TinySSD1306() {}
-        ~GPGFX_TinySSD1306() {}
+        virtual ~GPGFX_TinySSD1306() {}
 
         void init(GPGFX_DisplayTypeOptions options);
 
@@ -46,7 +46,7 @@ class GPGFX_TinySSD1306 : public GPGFX_DisplayBase {
 
         bool isSPI() { return this->_isSPI; }
         bool isI2C() { return this->_isI2C; }
-    private:
+    protected:
         typedef enum {
             SET_LOW_COLUMN = 0x00,
             SET_HIGH_COLUMN = 0x10,
