@@ -103,6 +103,22 @@ export enum SplashMode {
     SPLASH_MODE_NONE = 3
 }
 
+export enum SPIDisplayType {
+    SPI_DISPLAY_NONE = 0,
+    SPI_DISPLAY_NV3007 = 1
+}
+
+export enum SPIDisplayScaleMode {
+    SPI_DISPLAY_SCALE_STRETCH = 0,
+    SPI_DISPLAY_SCALE_FIT = 1,
+    SPI_DISPLAY_SCALE_FILL = 2
+}
+
+export enum SPIDisplayInitSequence {
+    SPI_DISPLAY_INIT_NV3007_STANDARD = 0,
+    SPI_DISPLAY_INIT_NV3007_279 = 1
+}
+
 export enum SplashChoice {
     SPLASH_CHOICE_MAIN = 0,
     SPLASH_CHOICE_X = 1,

@@ -371,6 +371,17 @@ app.get('/api/getDisplayOptions', (req, res) => {
 		inputHistoryCol: 0,
 		inputHistoryRow: 7,
 		displayContrast: 255,
+		spiDisplayType: 1,
+		spiDisplayBlock: 0,
+		spiDisplayPinDC: 7,
+		spiDisplayPinReset: 8,
+		spiDisplayPinBacklight: 22,
+		spiDisplayOffsetX: 0,
+		spiDisplayOffsetY: 12,
+		spiDisplayScaleMode: 0,
+		spiDisplayForegroundColor: 0xffffff,
+		spiDisplayBackgroundColor: 0x000000,
+		spiDisplayInitSequence: 0,
 	};
 	console.log('data', data);
 	return res.send(data);

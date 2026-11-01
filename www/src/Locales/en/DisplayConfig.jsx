@@ -12,7 +12,10 @@ export default {
 		'button-layout-header': 'Button Layout',
 		'status-layout-header': 'Status Bar Layout',
 		'history-layout-header': 'Input History Layout',
+		'spi-display-header': 'SPI Color Display',
 	},
+	'spi-display-sub-header-text':
+		'Color TFT on an SPI block (set SCK, TX and CS on the Peripheral Mapping page). The 128x64 screens are scaled up to fit the panel. Changes apply after a reboot.',
 	table: {
 		header:
 			'Use these tables to determine which I2C block to select based on the configured SDA and SCL pins:',
@@ -25,6 +28,30 @@ export default {
 		'scl-pin-label': 'SCL Pin',
 		'i2c-address-label': 'I2C Address',
 		'i2c-speed-label': 'I2C Speed',
+		'spi-display-type-label': 'Display Controller',
+		'spi-block-label': 'SPI Block',
+		'spi-pin-dc-label': 'DC Pin',
+		'spi-pin-reset-label': 'Reset Pin (-1 for none)',
+		'spi-pin-backlight-label': 'Backlight Pin (-1 for none)',
+		'spi-init-sequence-label': 'Panel Init Sequence',
+		'spi-scale-mode-label': 'Scaling',
+		'spi-offset-x-label': 'Offset X',
+		'spi-offset-y-label': 'Offset Y',
+		'spi-foreground-color-label': 'Foreground Color',
+		'spi-background-color-label': 'Background Color',
+		'spi-display-types': {
+			none: 'None',
+			nv3007: 'NV3007 (428x142)',
+		},
+		'spi-display-scale-modes': {
+			stretch: 'Stretch (3x2, 384x128)',
+			fit: 'Pixel Perfect (2x, 256x128)',
+			fill: 'Fill Panel (428x142)',
+		},
+		'spi-display-init-sequences': {
+			standard: 'Standard 142x428',
+			279: '2.79 inch 142x428',
+		},
 		'flip-display-label': 'Flip Display',
 		'invert-display-label': 'Invert Display',
 		'button-layout-label': 'Button Layout (Left)',

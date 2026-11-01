@@ -4,13 +4,22 @@
 #include <vector>
 
 #include "peripheralmanager.h"
+#include "storagemanager.h"
 #include "tiny_ssd1306.h"
+#include "nv3007.h"
 
 std::map<GPGFX_DisplayType, std::map<GPGFX_DisplaySize, GPGFX_DisplayMetrics>> GPGFX_DisplayModes = {
     {
         {DISPLAY_TYPE_SSD1306},
         {
             {SIZE_128x32,{128,32,1}},
+            {SIZE_128x64,{128,64,1}},
+        },
+    },
+    {
+        // The NV3007 renders the 128x64 canvas scaled up on its 428x142 panel
+        {DISPLAY_TYPE_NV3007},
+        {
             {SIZE_128x64,{128,64,1}},
         },
     },
@@ -25,12 +34,20 @@ void GPGFX::init(GPGFX_DisplayTypeOptions options) {
         case GPGFX_DisplayType::DISPLAY_TYPE_SSD1306:
             this->displayDriver = new GPGFX_TinySSD1306();
             break;
+        case GPGFX_DisplayType::DISPLAY_TYPE_NV3007:
+            this->displayDriver = new GPGFX_NV3007();
+            break;
         default:
             options.displayType = GPGFX_DisplayType::DISPLAY_TYPE_NONE;
     }
 
     if (options.displayType != GPGFX_DisplayType::DISPLAY_TYPE_NONE) {
-        this->displayDriver->setMetrics(&GPGFX_DisplayModes[options.displayType][(GPGFX_DisplaySize)options.size]);
+        // Fall back to the first supported size if the configured one isn't available for this display
+        std::map<GPGFX_DisplaySize, GPGFX_DisplayMetrics>& modes = GPGFX_DisplayModes[options.displayType];
+        if (modes.find((GPGFX_DisplaySize)options.size) == modes.end()) {
+            options.size = modes.begin()->first;
+        }
+        this->displayDriver->setMetrics(&modes[(GPGFX_DisplaySize)options.size]);
         this->displayDriver->init(options);
     }
 }
@@ -58,6 +75,8 @@ bool GPGFX::detectDisplay(GPGFX_DisplayTypeOptions* display, GPGFX_DisplayType d
 
     if (displayType == GPGFX_DisplayType::DISPLAY_TYPE_SSD1306) {
         driver = new GPGFX_TinySSD1306();
+    } else if (displayType == GPGFX_DisplayType::DISPLAY_TYPE_NV3007) {
+        driver = new GPGFX_NV3007();
     } else {
         driver = nullptr;
     }
@@ -73,7 +92,15 @@ bool GPGFX::detectDisplay(GPGFX_DisplayTypeOptions* display, GPGFX_DisplayType d
             }
         }
         if (driver->isSPI()) {
-            // NYI: check if SPI display exists
+            // SPI displays are write-only and can't be probed, so trust the configuration
+            const DisplayOptions& options = Storage::getInstance().getDisplayOptions();
+            bool isConfigured = (displayType == GPGFX_DisplayType::DISPLAY_TYPE_NV3007) && (options.spiDisplayType == SPI_DISPLAY_NV3007);
+            if (isConfigured && (options.spiDisplayPinDC > -1) && PeripheralManager::getInstance().isSPIEnabled(options.spiDisplayBlock)) {
+                display->displayType = displayType;
+                display->spi = PeripheralManager::getInstance().getSPI(options.spiDisplayBlock);
+                delete driver;
+                return true;
+            }
         }
         delete driver;
     }

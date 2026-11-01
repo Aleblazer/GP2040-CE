@@ -605,7 +605,7 @@ void ConfigUtils::initUnsetPropertiesWithDefaults(Config& config)
     }
 
     // displayOptions
-    INIT_UNSET_PROPERTY(config.displayOptions, enabled, !!HAS_I2C_DISPLAY);
+    INIT_UNSET_PROPERTY(config.displayOptions, enabled, !!HAS_I2C_DISPLAY || (SPI_DISPLAY_TYPE != SPI_DISPLAY_NONE));
     INIT_UNSET_PROPERTY(config.displayOptions, deprecatedI2cBlock, (DISPLAY_I2C_BLOCK == i2c0) ? 0 : 1);
     INIT_UNSET_PROPERTY(config.displayOptions, deprecatedI2cSDAPin, -1);
     INIT_UNSET_PROPERTY(config.displayOptions, deprecatedI2cSCLPin, -1);
@@ -665,6 +665,17 @@ void ConfigUtils::initUnsetPropertiesWithDefaults(Config& config)
     INIT_UNSET_PROPERTY(config.displayOptions, displaySaverMode, DISPLAY_SAVER_MODE);
     INIT_UNSET_PROPERTY(config.displayOptions, buttonLayoutOrientation, DISPLAY_LAYOUT_ORIENTATION);
     INIT_UNSET_PROPERTY(config.displayOptions, contrast, DISPLAY_CONTRAST);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayType, SPI_DISPLAY_TYPE);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayBlock, SPI_DISPLAY_BLOCK);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayPinDC, SPI_DISPLAY_PIN_DC);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayPinReset, SPI_DISPLAY_PIN_RESET);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayPinBacklight, SPI_DISPLAY_PIN_BACKLIGHT);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayOffsetX, SPI_DISPLAY_OFFSET_X);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayOffsetY, SPI_DISPLAY_OFFSET_Y);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayScaleMode, SPI_DISPLAY_SCALE_MODE);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayForegroundColor, SPI_DISPLAY_FOREGROUND_COLOR);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayBackgroundColor, SPI_DISPLAY_BACKGROUND_COLOR);
+    INIT_UNSET_PROPERTY(config.displayOptions, spiDisplayInitSequence, SPI_DISPLAY_INIT_SEQUENCE);
 
     // peripheralOptions
     PeripheralOptions& peripheralOptions = config.peripheralOptions;
@@ -1792,13 +1803,13 @@ void gpioMappingsMigrationCore(Config& config)
 
     // migrate I2C addons to use peripheral manager
     if (!peripheralOptions.blockI2C0.enabled && (
-            (config.displayOptions.enabled && (config.displayOptions.deprecatedI2cBlock == 0)) || 
+            (config.displayOptions.enabled && (config.displayOptions.spiDisplayType == SPI_DISPLAY_NONE) && (config.displayOptions.deprecatedI2cBlock == 0)) || 
             (config.addonOptions.analogADS1219Options.enabled && (config.addonOptions.analogADS1219Options.deprecatedI2cBlock == 0)) || 
             (config.addonOptions.wiiOptions.enabled && (config.addonOptions.wiiOptions.deprecatedI2cBlock == 0))
         )
     ) {
         peripheralOptions.blockI2C0.enabled = (
-            (config.displayOptions.enabled && (config.displayOptions.deprecatedI2cBlock == 0)) | 
+            (config.displayOptions.enabled && (config.displayOptions.spiDisplayType == SPI_DISPLAY_NONE) && (config.displayOptions.deprecatedI2cBlock == 0)) | 
             (config.addonOptions.analogADS1219Options.enabled && (config.addonOptions.analogADS1219Options.deprecatedI2cBlock == 0)) | 
             (config.addonOptions.wiiOptions.enabled && (config.addonOptions.wiiOptions.deprecatedI2cBlock == 0)) | 
             (!!I2C0_ENABLED)
@@ -1852,13 +1863,13 @@ void gpioMappingsMigrationCore(Config& config)
     }
 
     if (!peripheralOptions.blockI2C1.enabled && (
-            (config.displayOptions.enabled && (config.displayOptions.deprecatedI2cBlock == 1)) || 
+            (config.displayOptions.enabled && (config.displayOptions.spiDisplayType == SPI_DISPLAY_NONE) && (config.displayOptions.deprecatedI2cBlock == 1)) || 
             (config.addonOptions.analogADS1219Options.enabled && (config.addonOptions.analogADS1219Options.deprecatedI2cBlock == 1)) || 
             (config.addonOptions.wiiOptions.enabled && (config.addonOptions.wiiOptions.deprecatedI2cBlock == 1))
         )
     ) {
         peripheralOptions.blockI2C1.enabled = (
-            (config.displayOptions.enabled && (config.displayOptions.deprecatedI2cBlock == 1)) | 
+            (config.displayOptions.enabled && (config.displayOptions.spiDisplayType == SPI_DISPLAY_NONE) && (config.displayOptions.deprecatedI2cBlock == 1)) | 
             (config.addonOptions.analogADS1219Options.enabled && (config.addonOptions.analogADS1219Options.deprecatedI2cBlock == 1)) | 
             (config.addonOptions.wiiOptions.enabled && (config.addonOptions.wiiOptions.deprecatedI2cBlock == 1)) | 
             (!!I2C1_ENABLED)

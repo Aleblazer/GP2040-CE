@@ -37,6 +37,26 @@ const DISPLAY_SAVER_MODES = [
 	{ label: 'form.saver-modes.toast', value: 4 },
 ];
 
+const SPI_DISPLAY_TYPES = [
+	{ label: 'form.spi-display-types.none', value: 0 },
+	{ label: 'form.spi-display-types.nv3007', value: 1 },
+];
+
+const SPI_DISPLAY_SCALE_MODES = [
+	{ label: 'form.spi-display-scale-modes.stretch', value: 0 },
+	{ label: 'form.spi-display-scale-modes.fit', value: 1 },
+	{ label: 'form.spi-display-scale-modes.fill', value: 2 },
+];
+
+const SPI_DISPLAY_INIT_SEQUENCES = [
+	{ label: 'form.spi-display-init-sequences.standard', value: 0 },
+	{ label: 'form.spi-display-init-sequences.279', value: 1 },
+];
+
+const toColorInput = (value) =>
+	`#${(Number(value) & 0xffffff).toString(16).padStart(6, '0')}`;
+const fromColorInput = (value) => parseInt(value.slice(1), 16);
+
 const LAYOUT_ORIENTATION = [
 	{ label: 'form.layout-modes.standard', value: 0 },
 	{ label: 'form.layout-modes.southpaw', value: 1 },
@@ -83,6 +103,17 @@ const defaultValues = {
 	inputHistoryRow: 7,
 	turnOffWhenSuspended: 0,
 	displayContrast: 255,
+	spiDisplayType: 0,
+	spiDisplayBlock: 0,
+	spiDisplayPinDC: -1,
+	spiDisplayPinReset: -1,
+	spiDisplayPinBacklight: -1,
+	spiDisplayOffsetX: 0,
+	spiDisplayOffsetY: 12,
+	spiDisplayScaleMode: 0,
+	spiDisplayForegroundColor: 0xffffff,
+	spiDisplayBackgroundColor: 0x000000,
+	spiDisplayInitSequence: 0,
 };
 
 let buttonLayoutDefinitions = { buttonLayout: {}, buttonLayoutRight: {} };
@@ -170,6 +201,24 @@ const schema = yup.object().shape({
 	inputHistoryLength: yup.number().label('Input History Length'),
 	inputHistoryCol: yup.number().label('Input History Column Position'),
 	inputHistoryRow: yup.number().label('Input History Row Position'),
+	spiDisplayType: yup
+		.number()
+		.oneOf(SPI_DISPLAY_TYPES.map((o) => o.value))
+		.label('SPI Display'),
+	spiDisplayBlock: yup.number().min(0).max(1).label('SPI Block'),
+	spiDisplayPinDC: yup.number().min(-1).max(47).label('DC Pin'),
+	spiDisplayPinReset: yup.number().min(-1).max(47).label('Reset Pin'),
+	spiDisplayPinBacklight: yup.number().min(-1).max(47).label('Backlight Pin'),
+	spiDisplayOffsetX: yup.number().min(0).max(64).label('Offset X'),
+	spiDisplayOffsetY: yup.number().min(0).max(26).label('Offset Y'),
+	spiDisplayScaleMode: yup
+		.number()
+		.oneOf(SPI_DISPLAY_SCALE_MODES.map((o) => o.value))
+		.label('Scaling'),
+	spiDisplayInitSequence: yup
+		.number()
+		.oneOf(SPI_DISPLAY_INIT_SEQUENCES.map((o) => o.value))
+		.label('Panel Init Sequence'),
 });
 
 const FormContext = () => {
@@ -254,7 +303,7 @@ export default function DisplayConfigPage() {
 		>
 			{({ handleSubmit, handleChange, values, errors, setFieldValue }) => (
 				<Section title={t('DisplayConfig:header-text')}>
-					{getAvailablePeripherals('i2c') ? (
+					{getAvailablePeripherals('i2c') || getAvailablePeripherals('spi') ? (
 						<div>
 							<p>{t('DisplayConfig:sub-header-text')}</p>
 							<ul>
@@ -297,6 +346,209 @@ export default function DisplayConfigPage() {
 												))}
 											</FormSelect>
 										</Row>
+										<h1>{t('DisplayConfig:section.spi-display-header')}</h1>
+										<p>{t('DisplayConfig:spi-display-sub-header-text')}</p>
+										<Row className="mb-4">
+											<FormSelect
+												label={t('DisplayConfig:form.spi-display-type-label')}
+												name="spiDisplayType"
+												className="form-select-sm"
+												groupClassName="col-sm-3 mb-3"
+												value={values.spiDisplayType}
+												error={errors.spiDisplayType}
+												isInvalid={errors.spiDisplayType}
+												onChange={handleChange}
+											>
+												{SPI_DISPLAY_TYPES.map((o, i) => (
+													<option
+														key={`spiDisplayType-option-${i}`}
+														value={o.value}
+													>
+														{t(`DisplayConfig:${o.label}`)}
+													</option>
+												))}
+											</FormSelect>
+											{Number(values.spiDisplayType) !== 0 && (
+												<FormSelect
+													label={t('DisplayConfig:form.spi-block-label')}
+													name="spiDisplayBlock"
+													className="form-select-sm"
+													groupClassName="col-sm-3 mb-3"
+													value={values.spiDisplayBlock}
+													error={errors.spiDisplayBlock}
+													isInvalid={errors.spiDisplayBlock}
+													onChange={handleChange}
+												>
+													{(getAvailablePeripherals('spi') || []).map(
+														(o, i) => (
+															<option
+																key={`spiDisplayBlock-option-${i}`}
+																value={o.value}
+															>
+																{o.label}
+															</option>
+														),
+													)}
+												</FormSelect>
+											)}
+										</Row>
+										{Number(values.spiDisplayType) !== 0 && (
+											<>
+												<Row className="mb-4">
+													<FormControl
+														type="number"
+														label={t('DisplayConfig:form.spi-pin-dc-label')}
+														name="spiDisplayPinDC"
+														className="form-control-sm"
+														groupClassName="col-sm-3 mb-3"
+														value={values.spiDisplayPinDC}
+														error={errors.spiDisplayPinDC}
+														isInvalid={errors.spiDisplayPinDC}
+														onChange={handleChange}
+														min={-1}
+														max={47}
+													/>
+													<FormControl
+														type="number"
+														label={t('DisplayConfig:form.spi-pin-reset-label')}
+														name="spiDisplayPinReset"
+														className="form-control-sm"
+														groupClassName="col-sm-3 mb-3"
+														value={values.spiDisplayPinReset}
+														error={errors.spiDisplayPinReset}
+														isInvalid={errors.spiDisplayPinReset}
+														onChange={handleChange}
+														min={-1}
+														max={47}
+													/>
+													<FormControl
+														type="number"
+														label={t(
+															'DisplayConfig:form.spi-pin-backlight-label',
+														)}
+														name="spiDisplayPinBacklight"
+														className="form-control-sm"
+														groupClassName="col-sm-3 mb-3"
+														value={values.spiDisplayPinBacklight}
+														error={errors.spiDisplayPinBacklight}
+														isInvalid={errors.spiDisplayPinBacklight}
+														onChange={handleChange}
+														min={-1}
+														max={47}
+													/>
+												</Row>
+												<Row className="mb-4">
+													<FormSelect
+														label={t(
+															'DisplayConfig:form.spi-init-sequence-label',
+														)}
+														name="spiDisplayInitSequence"
+														className="form-select-sm"
+														groupClassName="col-sm-3 mb-3"
+														value={values.spiDisplayInitSequence}
+														error={errors.spiDisplayInitSequence}
+														isInvalid={errors.spiDisplayInitSequence}
+														onChange={handleChange}
+													>
+														{SPI_DISPLAY_INIT_SEQUENCES.map((o, i) => (
+															<option
+																key={`spiDisplayInitSequence-option-${i}`}
+																value={o.value}
+															>
+																{t(`DisplayConfig:${o.label}`)}
+															</option>
+														))}
+													</FormSelect>
+													<FormSelect
+														label={t('DisplayConfig:form.spi-scale-mode-label')}
+														name="spiDisplayScaleMode"
+														className="form-select-sm"
+														groupClassName="col-sm-3 mb-3"
+														value={values.spiDisplayScaleMode}
+														error={errors.spiDisplayScaleMode}
+														isInvalid={errors.spiDisplayScaleMode}
+														onChange={handleChange}
+													>
+														{SPI_DISPLAY_SCALE_MODES.map((o, i) => (
+															<option
+																key={`spiDisplayScaleMode-option-${i}`}
+																value={o.value}
+															>
+																{t(`DisplayConfig:${o.label}`)}
+															</option>
+														))}
+													</FormSelect>
+													<FormControl
+														type="number"
+														label={t('DisplayConfig:form.spi-offset-x-label')}
+														name="spiDisplayOffsetX"
+														className="form-control-sm"
+														groupClassName="col-sm-3 mb-3"
+														value={values.spiDisplayOffsetX}
+														error={errors.spiDisplayOffsetX}
+														isInvalid={errors.spiDisplayOffsetX}
+														onChange={handleChange}
+														min={0}
+														max={64}
+													/>
+													<FormControl
+														type="number"
+														label={t('DisplayConfig:form.spi-offset-y-label')}
+														name="spiDisplayOffsetY"
+														className="form-control-sm"
+														groupClassName="col-sm-3 mb-3"
+														value={values.spiDisplayOffsetY}
+														error={errors.spiDisplayOffsetY}
+														isInvalid={errors.spiDisplayOffsetY}
+														onChange={handleChange}
+														min={0}
+														max={26}
+													/>
+												</Row>
+												<Row className="mb-4">
+													<Form.Group className="col-sm-3 mb-3">
+														<Form.Label>
+															{t(
+																'DisplayConfig:form.spi-foreground-color-label',
+															)}
+														</Form.Label>
+														<Form.Control
+															type="color"
+															className="form-control-sm"
+															value={toColorInput(
+																values.spiDisplayForegroundColor,
+															)}
+															onChange={(e) =>
+																setFieldValue(
+																	'spiDisplayForegroundColor',
+																	fromColorInput(e.target.value),
+																)
+															}
+														/>
+													</Form.Group>
+													<Form.Group className="col-sm-3 mb-3">
+														<Form.Label>
+															{t(
+																'DisplayConfig:form.spi-background-color-label',
+															)}
+														</Form.Label>
+														<Form.Control
+															type="color"
+															className="form-control-sm"
+															value={toColorInput(
+																values.spiDisplayBackgroundColor,
+															)}
+															onChange={(e) =>
+																setFieldValue(
+																	'spiDisplayBackgroundColor',
+																	fromColorInput(e.target.value),
+																)
+															}
+														/>
+													</Form.Group>
+												</Row>
+											</>
+										)}
 									</Tab>
 									<Tab
 										key="displayScreenOptions"

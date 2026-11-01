@@ -458,6 +458,17 @@ std::string setDisplayOptions(DisplayOptions& displayOptions)
     readDoc(displayOptions.inputHistoryCol, doc, "inputHistoryCol");
     readDoc(displayOptions.inputHistoryRow, doc, "inputHistoryRow");
     readDoc(displayOptions.contrast, doc, "displayContrast");
+    readDoc(displayOptions.spiDisplayType, doc, "spiDisplayType");
+    readDoc(displayOptions.spiDisplayBlock, doc, "spiDisplayBlock");
+    readDoc(displayOptions.spiDisplayPinDC, doc, "spiDisplayPinDC");
+    readDoc(displayOptions.spiDisplayPinReset, doc, "spiDisplayPinReset");
+    readDoc(displayOptions.spiDisplayPinBacklight, doc, "spiDisplayPinBacklight");
+    readDoc(displayOptions.spiDisplayOffsetX, doc, "spiDisplayOffsetX");
+    readDoc(displayOptions.spiDisplayOffsetY, doc, "spiDisplayOffsetY");
+    readDoc(displayOptions.spiDisplayScaleMode, doc, "spiDisplayScaleMode");
+    readDoc(displayOptions.spiDisplayForegroundColor, doc, "spiDisplayForegroundColor");
+    readDoc(displayOptions.spiDisplayBackgroundColor, doc, "spiDisplayBackgroundColor");
+    readDoc(displayOptions.spiDisplayInitSequence, doc, "spiDisplayInitSequence");
 
     readDoc(displayOptions.buttonLayoutCustomOptions.paramsLeft.layout, doc, "buttonLayoutCustomOptions", "params", "layout");
     readDoc(displayOptions.buttonLayoutCustomOptions.paramsLeft.common.startX, doc, "buttonLayoutCustomOptions", "params", "startX");
@@ -515,6 +526,17 @@ std::string getDisplayOptions() // Manually set Document Attributes for the disp
     writeDoc(doc, "inputHistoryCol", displayOptions.inputHistoryCol);
     writeDoc(doc, "inputHistoryRow", displayOptions.inputHistoryRow);
     writeDoc(doc, "displayContrast", displayOptions.contrast);
+    writeDoc(doc, "spiDisplayType", displayOptions.spiDisplayType);
+    writeDoc(doc, "spiDisplayBlock", displayOptions.spiDisplayBlock);
+    writeDoc(doc, "spiDisplayPinDC", displayOptions.spiDisplayPinDC);
+    writeDoc(doc, "spiDisplayPinReset", displayOptions.spiDisplayPinReset);
+    writeDoc(doc, "spiDisplayPinBacklight", displayOptions.spiDisplayPinBacklight);
+    writeDoc(doc, "spiDisplayOffsetX", displayOptions.spiDisplayOffsetX);
+    writeDoc(doc, "spiDisplayOffsetY", displayOptions.spiDisplayOffsetY);
+    writeDoc(doc, "spiDisplayScaleMode", displayOptions.spiDisplayScaleMode);
+    writeDoc(doc, "spiDisplayForegroundColor", displayOptions.spiDisplayForegroundColor);
+    writeDoc(doc, "spiDisplayBackgroundColor", displayOptions.spiDisplayBackgroundColor);
+    writeDoc(doc, "spiDisplayInitSequence", displayOptions.spiDisplayInitSequence);
 
     writeDoc(doc, "buttonLayoutCustomOptions", "params", "layout", displayOptions.buttonLayoutCustomOptions.paramsLeft.layout);
     writeDoc(doc, "buttonLayoutCustomOptions", "params", "startX", displayOptions.buttonLayoutCustomOptions.paramsLeft.common.startX);

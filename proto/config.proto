@@ -315,6 +315,18 @@ message DisplayOptions
     optional uint32 inputHistoryRow = 30;
     
     optional uint32 contrast = 31;
+
+    optional SPIDisplayType spiDisplayType = 32;
+    optional int32 spiDisplayBlock = 33;
+    optional int32 spiDisplayPinDC = 34;
+    optional int32 spiDisplayPinReset = 35;
+    optional int32 spiDisplayPinBacklight = 36;
+    optional int32 spiDisplayOffsetX = 37;
+    optional int32 spiDisplayOffsetY = 38;
+    optional SPIDisplayScaleMode spiDisplayScaleMode = 39;
+    optional uint32 spiDisplayForegroundColor = 40;
+    optional uint32 spiDisplayBackgroundColor = 41;
+    optional SPIDisplayInitSequence spiDisplayInitSequence = 42;
 }
 
 message LightCluster

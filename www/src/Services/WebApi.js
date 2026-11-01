@@ -238,6 +238,15 @@ async function setDisplayOptions(options, isPreview) {
 	newOptions.displaySaverTimeout =
 		parseInt(options.displaySaverTimeout) * 60000; // minutes to milliseconds
 	newOptions.splashChoice = parseInt(options.splashChoice);
+	newOptions.spiDisplayType = parseInt(options.spiDisplayType);
+	newOptions.spiDisplayBlock = parseInt(options.spiDisplayBlock);
+	newOptions.spiDisplayPinDC = parseInt(options.spiDisplayPinDC);
+	newOptions.spiDisplayPinReset = parseInt(options.spiDisplayPinReset);
+	newOptions.spiDisplayPinBacklight = parseInt(options.spiDisplayPinBacklight);
+	newOptions.spiDisplayOffsetX = parseInt(options.spiDisplayOffsetX);
+	newOptions.spiDisplayOffsetY = parseInt(options.spiDisplayOffsetY);
+	newOptions.spiDisplayScaleMode = parseInt(options.spiDisplayScaleMode);
+	newOptions.spiDisplayInitSequence = parseInt(options.spiDisplayInitSequence);
 
 	if (newOptions.buttonLayoutCustomOptions) {
 		newOptions.buttonLayoutCustomOptions.params.layout = parseInt(
