@@ -87,34 +87,8 @@ void Gamepad::setup()
 	map48WayMode    = new GamepadButtonMapping(SUSTAIN_4_8_WAY_MODE);
 	mapFocusMode    = new GamepadButtonMapping(SUSTAIN_FOCUS_MODE);
 
-	const auto assignCustomMappingToMaps = [&](GpioMappingInfo mapInfo, Pin_t pin) -> void {
-		if (mapDpadUp->buttonMask & mapInfo.customDpadMask)	mapDpadUp->pinMask |= Mask_t{1} << pin;
-		if (mapDpadDown->buttonMask & mapInfo.customDpadMask)	mapDpadDown->pinMask |= Mask_t{1} << pin;
-		if (mapDpadLeft->buttonMask & mapInfo.customDpadMask)	mapDpadLeft->pinMask |= Mask_t{1} << pin;
-		if (mapDpadRight->buttonMask & mapInfo.customDpadMask)	mapDpadRight->pinMask |= Mask_t{1} << pin;
-		if (mapButtonB1->buttonMask & mapInfo.customButtonMask)	mapButtonB1->pinMask |= Mask_t{1} << pin;
-		if (mapButtonB2->buttonMask & mapInfo.customButtonMask)	mapButtonB2->pinMask |= Mask_t{1} << pin;
-		if (mapButtonB3->buttonMask & mapInfo.customButtonMask)	mapButtonB3->pinMask |= Mask_t{1} << pin;
-		if (mapButtonB4->buttonMask & mapInfo.customButtonMask)	mapButtonB4->pinMask |= Mask_t{1} << pin;
-		if (mapButtonL1->buttonMask & mapInfo.customButtonMask)	mapButtonL1->pinMask |= Mask_t{1} << pin;
-		if (mapButtonR1->buttonMask & mapInfo.customButtonMask)	mapButtonR1->pinMask |= Mask_t{1} << pin;
-		if (mapButtonL2->buttonMask & mapInfo.customButtonMask)	mapButtonL2->pinMask |= Mask_t{1} << pin;
-		if (mapButtonR2->buttonMask & mapInfo.customButtonMask)	mapButtonR2->pinMask |= Mask_t{1} << pin;
-		if (mapButtonS1->buttonMask & mapInfo.customButtonMask)	mapButtonS1->pinMask |= Mask_t{1} << pin;
-		if (mapButtonS2->buttonMask & mapInfo.customButtonMask)	mapButtonS2->pinMask |= Mask_t{1} << pin;
-		if (mapButtonL3->buttonMask & mapInfo.customButtonMask)	mapButtonL3->pinMask |= Mask_t{1} << pin;
-		if (mapButtonR3->buttonMask & mapInfo.customButtonMask)	mapButtonR3->pinMask |= Mask_t{1} << pin;
-		if (mapButtonA1->buttonMask & mapInfo.customButtonMask)	mapButtonA1->pinMask |= Mask_t{1} << pin;
-		if (mapButtonA2->buttonMask & mapInfo.customButtonMask)	mapButtonA2->pinMask |= Mask_t{1} << pin;
-		if (mapDigitalUp->buttonMask & mapInfo.customDpadMask)	mapDigitalUp->pinMask |= Mask_t{1} << pin;
-		if (mapDigitalDown->buttonMask & mapInfo.customDpadMask)	mapDigitalDown->pinMask |= Mask_t{1} << pin;
-		if (mapDigitalLeft->buttonMask & mapInfo.customDpadMask)	mapDigitalLeft->pinMask |= Mask_t{1} << pin;
-		if (mapDigitalRight->buttonMask & mapInfo.customDpadMask)	mapDigitalRight->pinMask |= Mask_t{1} << pin;
-	};
-
-	for (Pin_t pin = 0; pin < (Pin_t)NUM_BANK0_GPIOS; pin++)
-	{
-		switch (pinMappings[pin].action) {
+	const auto assignActionToMaps = [&](GpioAction action, Pin_t pin) -> void {
+		switch (action) {
 			case GpioAction::BUTTON_PRESS_UP:	mapDpadUp->pinMask |= Mask_t{1} << pin; break;
 			case GpioAction::BUTTON_PRESS_DOWN:	mapDpadDown->pinMask |= Mask_t{1} << pin; break;
 			case GpioAction::BUTTON_PRESS_LEFT:	mapDpadLeft->pinMask |= Mask_t{1} << pin; break;
@@ -151,7 +125,6 @@ void Gamepad::setup()
 			case GpioAction::SUSTAIN_DP_MODE_DP:	mapButtonDP->pinMask |= Mask_t{1} << pin; break;
 			case GpioAction::SUSTAIN_DP_MODE_LS:	mapButtonLS->pinMask |= Mask_t{1} << pin; break;
 			case GpioAction::SUSTAIN_DP_MODE_RS:	mapButtonRS->pinMask |= Mask_t{1} << pin; break;
-			case GpioAction::CUSTOM_BUTTON_COMBO:	assignCustomMappingToMaps(pinMappings[pin], pin); break;
 			case GpioAction::DIGITAL_DIRECTION_UP:	mapDigitalUp->pinMask |= Mask_t{1} << pin; break;
 			case GpioAction::DIGITAL_DIRECTION_DOWN:	mapDigitalDown->pinMask |= Mask_t{1} << pin; break;
 			case GpioAction::DIGITAL_DIRECTION_LEFT:	mapDigitalLeft->pinMask |= Mask_t{1} << pin; break;
@@ -167,6 +140,15 @@ void Gamepad::setup()
 			case GpioAction::SUSTAIN_4_8_WAY_MODE:	map48WayMode->pinMask |= Mask_t{1} << pin; break;
 			case GpioAction::SUSTAIN_FOCUS_MODE: mapFocusMode->pinMask |= Mask_t{1} << pin; break;
 			default:				break;
+		}
+	};
+
+	for (Pin_t pin = 0; pin < (Pin_t)NUM_BANK0_GPIOS; pin++)
+	{
+		if (pinMappings[pin].action == GpioAction::CUSTOM_BUTTON_COMBO) {
+			forEachComboAction(pinMappings[pin], [&](GpioAction action) { assignActionToMaps(action, pin); });
+		} else {
+			assignActionToMaps(pinMappings[pin].action, pin);
 		}
 	}
 

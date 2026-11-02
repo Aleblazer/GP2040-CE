@@ -130,6 +130,21 @@ const customLayoutSchema = (layoutField, layout) =>
 			}),
 	});
 
+// customLayoutMaxPin holds the board's highest GPIO once the page has loaded
+const spiDisplayPinSchema = (label) =>
+	yup
+		.number()
+		.min(-1)
+		.test(
+			'board-pin',
+			'${path} must be -1 or a GPIO on this board',
+			(value) =>
+				value === undefined ||
+				customLayoutMaxPin === undefined ||
+				value <= customLayoutMaxPin,
+		)
+		.label(label);
+
 const toDisplayOptionsRequest = (values) => {
 	const request = { ...values };
 	['customLayoutA', 'customLayoutB'].forEach((field) => {
@@ -185,9 +200,9 @@ const schema = yup.object().shape({
 		.oneOf(SPI_DISPLAY_TYPES.map((o) => o.value))
 		.label('SPI Display'),
 	spiDisplayBlock: yup.number().min(0).max(1).label('SPI Block'),
-	spiDisplayPinDC: yup.number().min(-1).max(47).label('DC Pin'),
-	spiDisplayPinReset: yup.number().min(-1).max(47).label('Reset Pin'),
-	spiDisplayPinBacklight: yup.number().min(-1).max(47).label('Backlight Pin'),
+	spiDisplayPinDC: spiDisplayPinSchema('DC Pin'),
+	spiDisplayPinReset: spiDisplayPinSchema('Reset Pin'),
+	spiDisplayPinBacklight: spiDisplayPinSchema('Backlight Pin'),
 	spiDisplayOffsetX: yup.number().min(0).max(64).label('Offset X'),
 	spiDisplayOffsetY: yup.number().min(0).max(26).label('Offset Y'),
 	spiDisplayScaleMode: yup
@@ -471,7 +486,7 @@ export default function DisplayConfigPage() {
 														isInvalid={errors.spiDisplayPinDC}
 														onChange={handleChange}
 														min={-1}
-														max={47}
+														max={boardDefinition.maxPin}
 													/>
 													<FormControl
 														type="number"
@@ -484,7 +499,7 @@ export default function DisplayConfigPage() {
 														isInvalid={errors.spiDisplayPinReset}
 														onChange={handleChange}
 														min={-1}
-														max={47}
+														max={boardDefinition.maxPin}
 													/>
 													<FormControl
 														type="number"
@@ -499,7 +514,7 @@ export default function DisplayConfigPage() {
 														isInvalid={errors.spiDisplayPinBacklight}
 														onChange={handleChange}
 														min={-1}
-														max={47}
+														max={boardDefinition.maxPin}
 													/>
 												</Row>
 												<Row className="mb-4">

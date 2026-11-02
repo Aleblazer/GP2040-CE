@@ -111,7 +111,7 @@ void GP2040::setup() {
 	if (addons.LoadAddon(heTrigger))
 		heTriggerAddon = heTrigger;
 	addons.LoadAddon(new BootselButtonAddon());
-	addons.LoadAddon(new ShiftRegisterInput());
+	addons.LoadInputAddon(new ShiftRegisterInput());
 	addons.LoadAddon(new DualDirectionalInput());
 	addons.LoadAddon(new FocusModeAddon());
 	addons.LoadAddon(new I2CAnalog1115Input());

@@ -1984,6 +1984,9 @@ void gpioMappingsMigrationCore(Config& config)
     markAddonPinIfUsed(config.addonOptions.snesOptions.clockPin);
     markAddonPinIfUsed(config.addonOptions.snesOptions.latchPin);
     markAddonPinIfUsed(config.addonOptions.snesOptions.dataPin);
+    markAddonPinIfUsed(config.displayOptions.spiDisplayPinDC);
+    markAddonPinIfUsed(config.displayOptions.spiDisplayPinReset);
+    markAddonPinIfUsed(config.displayOptions.spiDisplayPinBacklight);
     markAddonPinIfUsed(config.addonOptions.shiftRegisterInputOptions.latchPin);
     markAddonPinIfUsed(config.addonOptions.shiftRegisterInputOptions.clockPin);
     markAddonPinIfUsed(config.addonOptions.shiftRegisterInputOptions.dataPin);

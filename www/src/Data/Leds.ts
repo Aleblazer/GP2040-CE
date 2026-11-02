@@ -90,6 +90,27 @@ export type ButtonColorArrays = Partial<
 	>
 >;
 
+// LedConfigPage:buttonLayoutPreview title key and values naming a light's input
+export const getLightOverlayTitle = (
+	light: LightInputInfo,
+): { key: string; values: Record<string, string | number> } =>
+	isExtInputLight(light)
+		? {
+				key: 'overlay-hall-effect-title',
+				values: { index: light.GPIOPinOrNonButtonIndex + 1 },
+			}
+		: isShiftRegisterLight(light)
+			? {
+					key: 'overlay-shift-register-title',
+					values: {
+						input: getShiftRegisterInputName(light.GPIOPinOrNonButtonIndex),
+					},
+				}
+			: {
+					key: 'overlay-gpio-title',
+					values: { pin: light.GPIOPinOrNonButtonIndex },
+				};
+
 export const getLightInputLabel = (light: LightInputInfo) =>
 	isExtInputLight(light)
 		? `HE${light.GPIOPinOrNonButtonIndex + 1}`

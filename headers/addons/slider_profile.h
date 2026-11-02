@@ -35,6 +35,7 @@ private:
 
     Mask_t positionMasks[MAX_PROFILE_SLIDER_POSITIONS] = {0};
     Mask_t anyPositionMask = 0;
+    bool anyExternalPosition = false; // an external input (e.g. shift register) maps a position
     uint32_t numPositions = 0;
 };
 

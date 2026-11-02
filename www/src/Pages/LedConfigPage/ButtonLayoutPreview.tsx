@@ -11,9 +11,7 @@ import {
 	ButtonColorArrays,
 	getButtonColorKeys,
 	getLightInputLabel,
-	getShiftRegisterInputName,
-	isExtInputLight,
-	isShiftRegisterLight,
+	getLightOverlayTitle,
 } from '../../Data/Leds';
 import {
 	Light,
@@ -118,6 +116,14 @@ function ButtonLayoutPreview({
 		color: rgbIntToHex(color),
 	}));
 	const colorOptions = [...LED_COLORS, ...customColorOptions];
+	const colorArrays: ButtonColorArrays = {
+		notPressedStaticColors,
+		pressedStaticColors,
+		extNotPressedStaticColors,
+		extPressedStaticColors,
+		shiftRegisterNotPressedStaticColors,
+		shiftRegisterPressedStaticColors,
+	};
 
 	const handlePressedShow = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
 		if (e.button === 2) setPressed(true);
@@ -206,18 +212,9 @@ function ButtonLayoutPreview({
 						xmlns="http://www.w3.org/2000/svg"
 					>
 						{Lights.map((light, index) => {
-							const colorArrays: ButtonColorArrays = {
-								notPressedStaticColors,
-								pressedStaticColors,
-								extNotPressedStaticColors,
-								extPressedStaticColors,
-								shiftRegisterNotPressedStaticColors,
-								shiftRegisterPressedStaticColors,
-							};
+							const overlayTitle = getLightOverlayTitle(light);
 							switch (light.lightType) {
 								case LIGHT_TYPES.ActionButton: {
-									const isExtInput = isExtInputLight(light);
-									const isShiftRegister = isShiftRegisterLight(light);
 									const colorKeys = getButtonColorKeys(light);
 									const lightNotPressedColors =
 										colorArrays[colorKeys.notPressed] ?? [];
@@ -226,26 +223,10 @@ function ButtonLayoutPreview({
 									return (
 										<ColorSelectOverlay
 											key={`button-light-${index}`}
-											title={
-												isExtInput
-													? t(
-															'LedConfigPage:buttonLayoutPreview.overlay-hall-effect-title',
-															{ index: light.GPIOPinOrNonButtonIndex + 1 },
-														)
-													: isShiftRegister
-														? t(
-																'LedConfigPage:buttonLayoutPreview.overlay-shift-register-title',
-																{
-																	input: getShiftRegisterInputName(
-																		light.GPIOPinOrNonButtonIndex,
-																	),
-																},
-															)
-														: t(
-																'LedConfigPage:buttonLayoutPreview.overlay-gpio-title',
-																{ pin: light.GPIOPinOrNonButtonIndex },
-															)
-											}
+											title={t(
+												`LedConfigPage:buttonLayoutPreview.${overlayTitle.key}`,
+												overlayTitle.values,
+											)}
 											content={
 												<div style={{ minWidth: 200 }}>
 													<p>
@@ -410,26 +391,10 @@ function ButtonLayoutPreview({
 									return (
 										<ColorSelectOverlay
 											key={`misc-light-${index}`}
-											title={
-												isExtInputLight(light)
-													? t(
-															'LedConfigPage:buttonLayoutPreview.overlay-hall-effect-title',
-															{ index: light.GPIOPinOrNonButtonIndex + 1 },
-														)
-													: isShiftRegisterLight(light)
-														? t(
-																'LedConfigPage:buttonLayoutPreview.overlay-shift-register-title',
-																{
-																	input: getShiftRegisterInputName(
-																		light.GPIOPinOrNonButtonIndex,
-																	),
-																},
-															)
-														: t(
-																'LedConfigPage:buttonLayoutPreview.overlay-gpio-title',
-																{ pin: light.GPIOPinOrNonButtonIndex },
-															)
-											}
+											title={t(
+												`LedConfigPage:buttonLayoutPreview.${overlayTitle.key}`,
+												overlayTitle.values,
+											)}
 											content={
 												<div style={{ minWidth: 200 }}>
 													<p>

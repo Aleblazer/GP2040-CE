@@ -23,6 +23,7 @@ public:
     ~AddonManager() {}
     bool LoadAddon(GPAddon*);
     bool LoadUSBAddon(GPAddon*);
+    bool LoadInputAddon(GPAddon*); // add-ons that read inputs through GPAddon::readInputs()
     void ReinitializeAddons();
     void ReadInputAddons();
     void PreprocessAddons();
@@ -31,6 +32,7 @@ public:
     GPAddon * GetAddon(std::string); // hack for NeoPicoLED
 private:
     std::vector<AddonBlock*> addons;    // addons currently loaded
+    std::vector<GPAddon*> inputAddons;  // loaded addons with readInputs()
 };
 
 #endif

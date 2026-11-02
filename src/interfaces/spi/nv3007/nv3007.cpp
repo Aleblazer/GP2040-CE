@@ -3,8 +3,8 @@
 #include <algorithm>
 
 #include "storagemanager.h"
+#include "helper.h"
 #include "config.pb.h"
-#include "hardware/clocks.h"
 #include "hardware/dma.h"
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
@@ -275,10 +275,12 @@ void GPGFX_NV3007::init(GPGFX_DisplayTypeOptions options) {
     if (options.spi == nullptr) return;
     _spi = options.spi->getController();
 
-    _pinCS = (displayOptions.spiDisplayBlock == 0) ? peripheralOptions.blockSPI0.cs : peripheralOptions.blockSPI1.cs;
-    _pinDC = displayOptions.spiDisplayPinDC;
-    _pinRST = displayOptions.spiDisplayPinReset;
-    _pinBL = displayOptions.spiDisplayPinBacklight;
+    // Pins outside this chip's GPIO range are treated as not connected
+    const auto validPinOrNone = [](int32_t pin) -> int8_t { return isValidPin(pin) ? pin : -1; };
+    _pinCS = validPinOrNone((displayOptions.spiDisplayBlock == 0) ? peripheralOptions.blockSPI0.cs : peripheralOptions.blockSPI1.cs);
+    _pinDC = validPinOrNone(displayOptions.spiDisplayPinDC);
+    _pinRST = validPinOrNone(displayOptions.spiDisplayPinReset);
+    _pinBL = validPinOrNone(displayOptions.spiDisplayPinBacklight);
 
     if (_pinDC < 0) return;
 
@@ -302,14 +304,11 @@ void GPGFX_NV3007::init(GPGFX_DisplayTypeOptions options) {
     }
 
     if (_pinBL >= 0) {
-        // ~25kHz PWM so the brightness setting has no audible or visible flicker
+        // The slice's clock divider and wrap are shared with the other pins on it (e.g. PWM
+        // player or reactive LEDs), so leave them alone and scale the level to the wrap instead
         gpio_set_function(_pinBL, GPIO_FUNC_PWM);
-        uint slice = pwm_gpio_to_slice_num(_pinBL);
-        pwm_config config = pwm_get_default_config();
-        pwm_config_set_wrap(&config, 255);
-        pwm_config_set_clkdiv(&config, (float)clock_get_hz(clk_sys) / (256.0f * 25000.0f));
-        pwm_init(slice, &config, true);
         setBacklight(0);
+        pwm_set_enabled(pwm_gpio_to_slice_num(_pinBL), true);
     }
 
     if (_dmaChannel < 0) {
@@ -425,8 +424,10 @@ void GPGFX_NV3007::setPower(bool isPowered) {
 
 void GPGFX_NV3007::setBacklight(uint8_t level) {
     if (_pinBL < 0) return;
-    // Level above the wrap value keeps the output high for full brightness
-    pwm_set_gpio_level(_pinBL, (level == 0xFF) ? 256 : level);
+    // A level of wrap + 1 keeps the output high for full brightness
+    uint32_t wrap = pwm_hw->slice[pwm_gpio_to_slice_num(_pinBL)].top;
+    uint32_t pwmLevel = ((uint32_t)level * (wrap + 1)) / 0xFF;
+    pwm_set_gpio_level(_pinBL, (uint16_t)std::min<uint32_t>(pwmLevel, 0xFFFF));
 }
 
 void GPGFX_NV3007::drawBuffer(uint8_t* pBuffer) {

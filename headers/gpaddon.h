@@ -17,7 +17,8 @@ public:
 
     /**
      * Read inputs that aren't GPIO pins, before the gamepad state is built from the pins.
-     * Add-ons report what they read through Gamepad::holdExternalAction().
+     * Add-ons report what they read through Gamepad::holdExternalAction(), and must be
+     * loaded with AddonManager::LoadInputAddon() to be called.
      */
     virtual void readInputs() {}
     virtual void postprocess(bool) = 0;

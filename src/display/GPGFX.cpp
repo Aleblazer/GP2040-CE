@@ -5,6 +5,7 @@
 
 #include "peripheralmanager.h"
 #include "storagemanager.h"
+#include "helper.h"
 #include "tiny_ssd1306.h"
 #include "nv3007.h"
 
@@ -95,7 +96,7 @@ bool GPGFX::detectDisplay(GPGFX_DisplayTypeOptions* display, GPGFX_DisplayType d
             // SPI displays are write-only and can't be probed, so trust the configuration
             const DisplayOptions& options = Storage::getInstance().getDisplayOptions();
             bool isConfigured = (displayType == GPGFX_DisplayType::DISPLAY_TYPE_NV3007) && (options.spiDisplayType == SPI_DISPLAY_NV3007);
-            if (isConfigured && (options.spiDisplayPinDC > -1) && PeripheralManager::getInstance().isSPIEnabled(options.spiDisplayBlock)) {
+            if (isConfigured && isValidPin(options.spiDisplayPinDC) &&PeripheralManager::getInstance().isSPIEnabled(options.spiDisplayBlock)) {
                 display->displayType = displayType;
                 display->spi = PeripheralManager::getInstance().getSPI(options.spiDisplayBlock);
                 delete driver;

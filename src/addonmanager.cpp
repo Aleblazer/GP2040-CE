@@ -23,6 +23,13 @@ bool AddonManager::LoadUSBAddon(GPAddon* addon) {
     return ret;
 }
 
+bool AddonManager::LoadInputAddon(GPAddon* addon) {
+    bool ret = LoadAddon(addon);
+    if ( ret == true )
+        inputAddons.push_back(addon);
+    return ret;
+}
+
 void AddonManager::ReinitializeAddons() {
     // Loop through all addons and process any that match our type
     for (std::vector<AddonBlock*>::iterator it = addons.begin(); it != addons.end(); it++) {
@@ -31,10 +38,12 @@ void AddonManager::ReinitializeAddons() {
 }
 
 void AddonManager::ReadInputAddons() {
-    Gamepad * gamepad = Storage::getInstance().GetGamepad();
-    gamepad->clearExternalActionsHeld();
-    for (std::vector<AddonBlock*>::iterator it = addons.begin(); it != addons.end(); it++) {
-        (*it)->ptr->readInputs();
+    // Nothing can hold an external action without an input add-on
+    if (inputAddons.empty()) return;
+
+    Storage::getInstance().GetGamepad()->clearExternalActionsHeld();
+    for (GPAddon* addon : inputAddons) {
+        addon->readInputs();
     }
 }
 

@@ -217,6 +217,40 @@ public:
 	inline void clearExternalActionsHeld() { memset(externalActionsHeld, 0, sizeof(externalActionsHeld)); }
 
 	/**
+	 * @brief Calls apply(action) for each action a CUSTOM_BUTTON_COMBO mapping presses: its d-pad
+	 * directions (as both d-pad buttons and digital directions) and its B1-A4 buttons.
+	 */
+	template <typename F>
+	static void forEachComboAction(const GpioMappingInfo& mapping, F&& apply) {
+		static const struct { uint32_t mask; GpioAction dpad; GpioAction digital; } comboDirections[] = {
+			{ GAMEPAD_MASK_UP,    GpioAction::BUTTON_PRESS_UP,    GpioAction::DIGITAL_DIRECTION_UP },
+			{ GAMEPAD_MASK_DOWN,  GpioAction::BUTTON_PRESS_DOWN,  GpioAction::DIGITAL_DIRECTION_DOWN },
+			{ GAMEPAD_MASK_LEFT,  GpioAction::BUTTON_PRESS_LEFT,  GpioAction::DIGITAL_DIRECTION_LEFT },
+			{ GAMEPAD_MASK_RIGHT, GpioAction::BUTTON_PRESS_RIGHT, GpioAction::DIGITAL_DIRECTION_RIGHT },
+		};
+		static const struct { uint32_t mask; GpioAction action; } comboButtons[] = {
+			{ GAMEPAD_MASK_B1, GpioAction::BUTTON_PRESS_B1 }, { GAMEPAD_MASK_B2, GpioAction::BUTTON_PRESS_B2 },
+			{ GAMEPAD_MASK_B3, GpioAction::BUTTON_PRESS_B3 }, { GAMEPAD_MASK_B4, GpioAction::BUTTON_PRESS_B4 },
+			{ GAMEPAD_MASK_L1, GpioAction::BUTTON_PRESS_L1 }, { GAMEPAD_MASK_R1, GpioAction::BUTTON_PRESS_R1 },
+			{ GAMEPAD_MASK_L2, GpioAction::BUTTON_PRESS_L2 }, { GAMEPAD_MASK_R2, GpioAction::BUTTON_PRESS_R2 },
+			{ GAMEPAD_MASK_S1, GpioAction::BUTTON_PRESS_S1 }, { GAMEPAD_MASK_S2, GpioAction::BUTTON_PRESS_S2 },
+			{ GAMEPAD_MASK_L3, GpioAction::BUTTON_PRESS_L3 }, { GAMEPAD_MASK_R3, GpioAction::BUTTON_PRESS_R3 },
+			{ GAMEPAD_MASK_A1, GpioAction::BUTTON_PRESS_A1 }, { GAMEPAD_MASK_A2, GpioAction::BUTTON_PRESS_A2 },
+			{ GAMEPAD_MASK_A3, GpioAction::BUTTON_PRESS_A3 }, { GAMEPAD_MASK_A4, GpioAction::BUTTON_PRESS_A4 },
+		};
+
+		for (const auto& direction : comboDirections) {
+			if (mapping.customDpadMask & direction.mask) {
+				apply(direction.dpad);
+				apply(direction.digital);
+			}
+		}
+		for (const auto& button : comboButtons) {
+			if (mapping.customButtonMask & button.mask) apply(button.action);
+		}
+	}
+
+	/**
 	 * @brief True when a pin mapped to the action is pressed, or an external input holds the action.
 	 */
 	inline bool isActionPressed(Mask_t pinMask, GpioAction action) const {

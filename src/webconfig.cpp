@@ -491,9 +491,9 @@ std::string setDisplayOptions(DisplayOptions& displayOptions)
     readDoc(displayOptions.contrast, doc, "displayContrast");
     readDoc(displayOptions.spiDisplayType, doc, "spiDisplayType");
     readDoc(displayOptions.spiDisplayBlock, doc, "spiDisplayBlock");
-    readDoc(displayOptions.spiDisplayPinDC, doc, "spiDisplayPinDC");
-    readDoc(displayOptions.spiDisplayPinReset, doc, "spiDisplayPinReset");
-    readDoc(displayOptions.spiDisplayPinBacklight, doc, "spiDisplayPinBacklight");
+    docToPin(displayOptions.spiDisplayPinDC, doc, "spiDisplayPinDC");
+    docToPin(displayOptions.spiDisplayPinReset, doc, "spiDisplayPinReset");
+    docToPin(displayOptions.spiDisplayPinBacklight, doc, "spiDisplayPinBacklight");
     readDoc(displayOptions.spiDisplayOffsetX, doc, "spiDisplayOffsetX");
     readDoc(displayOptions.spiDisplayOffsetY, doc, "spiDisplayOffsetY");
     readDoc(displayOptions.spiDisplayScaleMode, doc, "spiDisplayScaleMode");

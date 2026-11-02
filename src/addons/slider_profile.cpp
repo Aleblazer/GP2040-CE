@@ -40,8 +40,11 @@ void SliderProfileInput::setup()
         }
     }
 
+    const Gamepad * gamepad = Storage::getInstance().GetGamepad();
+    anyExternalPosition = false;
     for (uint32_t i = 0; i < numPositions; i++) {
         anyPositionMask |= positionMasks[i];
+        anyExternalPosition |= gamepad->hasExternalAction((GpioAction)(SUSTAIN_PROFILE_SLIDER_POSITION_1 + i));
     }
 }
 
@@ -53,14 +56,11 @@ uint32_t SliderProfileInput::read() {
     // profile change; if the new profile doesn't map any slider positions,
     // hold the current profile instead of snapping to the default profile,
     // which would oscillate between the two profiles
-    const Gamepad * gamepad = Storage::getInstance().GetGamepad();
-    bool anyExternalPosition = false;
-    for (uint32_t i = 0; i < numPositions; i++) {
-        anyExternalPosition |= gamepad->hasExternalAction((GpioAction)(SUSTAIN_PROFILE_SLIDER_POSITION_1 + i));
-    }
     if (anyPositionMask == 0 && !anyExternalPosition) {
         return currentProfile;
     }
+
+    const Gamepad * gamepad = Storage::getInstance().GetGamepad();
 
     // Check each position mask in order
     for (uint32_t i = 0; i < numPositions; i++) {

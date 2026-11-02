@@ -9,6 +9,7 @@
 class GPGFX {
     public:
         GPGFX();
+        ~GPGFX() { delete displayDriver; }
 
         void init(GPGFX_DisplayTypeOptions options);
 
